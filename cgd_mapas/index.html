@@ -1,0 +1,4339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa de Doações TESTE – Aplicação Profissional</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <!-- Font Awesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* =========================================================================
+       VARIÁVEIS DE COR E ESTILOS BÁSICOS
+    ========================================================================= */
+    :root {
+      --dark-blue: #072745;
+      --primary-color: #003057;
+      --secondary-color: #00509e;
+      --accent-color: #cce0ff;
+      --bg-color: #f4f6f8;
+      --white: #ffffff;
+      --gold: #A18547;
+      --box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      --inf-offset: 40px;
+      --tab-color-1: #002445;
+      --tab-color-2: #003057;
+      --tab-color-3: #00509e;
+      --tab-color-4: #0066cc;
+      --transition: 0.25s cubic-bezier(.4,0,.2,1);
+      --radius: 16px;
+      --font-main: 'Inter', 'Segoe UI', Arial, sans-serif;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      font-family: var(--font-main);
+      background: var(--bg-color);
+      color: #222;
+      font-size: 17px;
+      scroll-behavior: smooth;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+    /* POP UP DE INSTRUÇÕES */
+    #instructionModal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      transition: opacity var(--transition);
+    }
+    .instruction-content {
+      background: var(--white);
+      padding: 40px 32px 32px 32px;
+      border-radius: var(--radius);
+      width: 95%;
+      max-width: 520px;
+      text-align: center;
+      box-shadow: var(--box-shadow);
+      animation: popIn 0.5s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .instruction-content h2 {
+      margin-bottom: 18px;
+      color: var(--dark-blue);
+      font-size: 1.7rem;
+      font-weight: 700;
+    }
+    .instruction-content p, .instruction-content li {
+      font-size: 1.08rem;
+      color: var(--primary-color);
+      line-height: 1.6;
+    }
+    .instruction-content ul {
+      text-align: left;
+      margin-bottom: 22px;
+      line-height: 1.7;
+      padding-left: 22px;
+    }
+    .instruction-content li {
+      margin: 10px 0;
+    }
+    #closeInstructionBtn {
+      background: #f8f6f2;
+      border: 1.5px solid #B29637;
+      color: #B29637;
+      padding: 14px 32px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: normal;
+      transition: all var(--transition);
+      box-shadow: 0 2px 8px rgba(178, 150, 55, 0.1);
+      letter-spacing: 0.5px;
+    }
+    #closeInstructionBtn:hover {
+      background: #B29637;
+      color: #f8f6f2;
+      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.2);
+      transform: translateY(-1px);
+    }
+    /* HEADER UNIFICADO */
+    .unified-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: var(--white);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1100;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 32px;
+      height: 120px;
+    }
+
+    .logo-section img {
+      height: 90px;
+      width: auto;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.10));
+    }
+
+    .header-bottom {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 32px 16px 32px;
+      border-top: none;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0 32px;
+    }
+
+    .help-btn {
+      background: #f8f6f2;
+      border: 1.5px solid #B29637;
+      color: #B29637;
+      font-size: 0.9rem;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: normal;
+      transition: all var(--transition);
+      box-shadow: 0 2px 8px rgba(178, 150, 55, 0.1);
+      outline: none;
+      letter-spacing: 0.2px;
+      font-family: var(--font-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .help-btn:hover {
+      background: #B29637;
+      color: #f8f6f2;
+      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 16px;
+    }
+
+    /* MODAL DE INSTRUÇÕES */
+    .instructions-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .instructions-modal.show {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .instructions-content {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .instructions-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 32px;
+      border-bottom: 1px solid #e0e0e0;
+      background: linear-gradient(135deg, #B29637 0%, #c4a94a 100%);
+      color: white;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .instructions-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .close-instructions-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-instructions-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .instructions-body {
+      padding: 32px;
+    }
+
+    .instruction-section {
+      margin-bottom: 32px;
+    }
+
+    .instruction-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .instruction-section h3 {
+      color: #B29637;
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 8px;
+    }
+
+    .instruction-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .instruction-section li {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #B29637;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .instruction-section li:hover {
+      background: #e9ecef;
+      transform: translateX(5px);
+    }
+
+    .instruction-section li i {
+      color: #B29637;
+      width: 20px;
+      text-align: center;
+    }
+    .nav-right {
+      display: flex;
+      gap: 18px;
+    }
+    .nav-buttons button {
+      background: #f8f6f2;
+      border: 1.5px solid #B29637;
+      color: #B29637;
+      font-size: 0.95rem;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: normal;
+      transition: all var(--transition);
+      box-shadow: 0 2px 8px rgba(178, 150, 55, 0.1);
+      outline: none;
+      letter-spacing: 0.2px;
+      font-family: var(--font-main);
+    }
+    .nav-buttons button:hover {
+      background: #B29637;
+      color: #f8f6f2;
+      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.2);
+      transform: translateY(-1px);
+    }
+    .nav-buttons button.active {
+      background: #B29637;
+      color: #f8f6f2;
+      border-color: #B29637;
+      box-shadow: 0 2px 12px rgba(178, 150, 55, 0.3);
+    }
+    
+
+    /* MAPA */
+    #map {
+      position: absolute;
+      top: 184px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      transition: filter var(--transition);
+    }
+    /* SIDEBARS LATERAIS */
+    .sidebar-left, .sidebar-right {
+      position: fixed;
+      top: 200px;
+      width: 340px;
+      max-height: calc(100% - 220px);
+      background: linear-gradient(135deg, #ffffff 80%, #f4f6f8 100%);
+      border: 1.5px solid #e0e0e0;
+      border-radius: var(--radius);
+      padding: 26px 22px 22px 22px;
+      box-shadow: var(--box-shadow);
+      overflow-y: auto;
+      z-index: 1000;
+      transition: box-shadow var(--transition), border var(--transition);
+    }
+
+    /* SIDEBAR ESQUERDO COMO MENU LATERAL */
+    .sidebar-left {
+      position: fixed;
+      top: 184px;
+      left: 0;
+      width: 340px;
+      height: calc(100vh - 184px);
+      max-height: calc(100vh - 184px);
+      border-radius: 0;
+      border-left: none;
+      border-top: none;
+      border-bottom: none;
+      border-right: 1.5px solid #e0e0e0;
+      padding: 26px 22px 22px 22px;
+      background: #F7F7F7;
+      box-shadow: var(--box-shadow);
+      overflow-y: auto;
+      z-index: 1000;
+      transition: box-shadow var(--transition), border var(--transition);
+    }
+    
+
+    
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .view-table-btn {
+      background: #003057;
+      border: 1.5px solid #003057;
+      color: white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+    }
+    
+    .view-table-btn:hover {
+      background: #00509e;
+      border-color: #00509e;
+      transform: scale(1.1);
+    }
+
+    /* OCULTAR SIDEBAR DIREITO COMPLETAMENTE */
+    .sidebar-right {
+      display: none !important;
+    }
+
+    /* CARD DE DETALHES DA ESCOLA NA DIREITA */
+    .school-details-card-right {
+      position: fixed;
+      top: 184px;
+      right: 0;
+      width: 340px;
+      height: calc(100vh - 184px);
+      background: #F7F7F7;
+      border-left: 1.5px solid #e0e0e0;
+      box-shadow: -4px 0 16px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none;
+      overflow-y: auto;
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    .school-details-card-right.show {
+      display: block;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    /* Ajustar o mapa para ficar ao lado do sidebar */
+    #map {
+      position: absolute;
+      top: 184px;
+      left: 340px;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      transition: filter var(--transition), left var(--transition), right var(--transition);
+    }
+
+    /* Classe para quando o sidebar direito estiver visível */
+    #map.with-right-sidebar {
+      left: 340px;
+      right: 340px;
+    }
+
+    /* Garantir que o mapa ocupe toda a largura quando sidebar direito estiver oculto */
+    #map:not(.with-right-sidebar) {
+      right: 0 !important;
+    }
+
+    /* Remover qualquer espaço reservado para sidebar direito */
+    body:not(.schools-mode) .sidebar-right {
+      position: absolute !important;
+      left: -9999px !important;
+      top: -9999px !important;
+    }
+
+    .sidebar-right {
+      right: 32px;
+    }
+    .sidebar-left h2, .sidebar-right h2 {
+      font-size: 1.18rem;
+      color: var(--dark-blue);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e0e0;
+      font-weight: normal;
+      letter-spacing: 0.2px;
+    }
+    /* ELEMENTOS INTERNOS DOS BOXES */
+    .totals-card {
+      display: flex;
+      justify-content: space-around;
+      background: linear-gradient(90deg, var(--primary-color) 60%, var(--secondary-color) 100%);
+      border-radius: 12px;
+      padding: 18px 0;
+      margin-bottom: 18px;
+      font-size: 1.13rem;
+      color: #fff;
+      font-weight: normal;
+      box-shadow: 0 2px 8px rgba(0,48,87,0.08);
+      gap: 12px;
+    }
+    .totals-card div i {
+      margin-right: 7px;
+      color: var(--gold);
+      font-size: 1.2em;
+    }
+    .entities-list {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 15px 10px;
+      margin-bottom: 18px;
+      max-height: 220px;
+      overflow-y: auto;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .entities-list .entity-item {
+      padding: 8px 0;
+      font-size: 1.01rem;
+      border-bottom: 1px solid #ececec;
+      transition: background var(--transition);
+    }
+    .entities-list .entity-item:last-child {
+      border-bottom: none;
+    }
+    .entities-list .entity-item:hover {
+      background: #eaeaea;
+    }
+    #showChartBtn {
+      background: #f8f6f2;
+      border: 1.5px solid #B29637;
+      color: #B29637;
+      padding: 13px;
+      width: 100%;
+      border-radius: 25px;
+      font-size: 1.08rem;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(178, 150, 55, 0.1);
+      font-weight: normal;
+    }
+    #showChartBtn:hover {
+      background: #B29637;
+      color: #f8f6f2;
+      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.2);
+      transform: translateY(-1px);
+    }
+    /* SIDEBAR DIREITA */
+    #centralDetails {
+      margin-bottom: 15px;
+      font-size: 1.05rem;
+      color: var(--dark-blue);
+      font-weight: 600;
+      padding: 10px 0;
+      background: #f9fafc;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    #centraisList details {
+      margin-bottom: 10px;
+      padding: 8px 0;
+      background: #fafafa;
+      border-radius: 6px;
+      transition: background var(--transition);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    #centraisList summary {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1.05rem;
+      list-style: none;
+      outline: none;
+      padding: 4px 0 4px 2px;
+    }
+    #centraisList details[open] {
+      background: #f0f8ff;
+    }
+    .central-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.98rem;
+      border-radius: 6px;
+      transition: background var(--transition), color var(--transition);
+      margin: 2px 0;
+    }
+    .central-item:hover {
+      background: #e0efff;
+      color: var(--primary-color);
+    }
+    .central-item.selected {
+      background: #cce0ff;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    .school-item {
+      padding: 8px 12px;
+      font-size: 1.05rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background var(--transition), color var(--transition);
+      margin: 2px 0;
+    }
+    .school-item:hover {
+      background: #e0efff;
+      color: var(--primary-color);
+    }
+    .school-item.selected {
+      background: #cce0ff;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    /* MODAL DO GRÁFICO */
+    #chartModal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 11000;
+      transition: opacity var(--transition);
+    }
+    #chartModal .modal-content {
+      background: var(--white);
+      padding: 32px 24px 24px 24px;
+      border-radius: var(--radius);
+      width: 95vw;
+      max-width: 900px;
+      height: 80vh;
+      max-height: 700px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      animation: popIn 0.4s cubic-bezier(.4,0,.2,1);
+      display: flex;
+      flex-direction: column;
+    }
+    #chartModal .close-modal {
+      position: absolute;
+      top: 12px; right: 12px;
+      background: var(--primary-color);
+      color: var(--white);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-weight: bold;
+      transition: background var(--transition), transform var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+    }
+    #chartModal .close-modal:hover {
+      background: #dc3545;
+      transform: scale(1.1);
+    }
+    
+    #chartModal canvas {
+      flex: 1;
+      min-height: 500px;
+      max-height: 600px;
+    }
+    
+    /* MODAL DA TABELA */
+    #dataTableModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .table-modal {
+      background: var(--white);
+      padding: 24px;
+      border-radius: var(--radius);
+      width: 90vw;
+      max-width: 1200px;
+      height: 80vh;
+      max-height: 700px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      animation: popIn 0.4s cubic-bezier(.4,0,.2,1);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .table-modal h2 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .table-container {
+      flex: 1;
+      overflow: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    
+    #dataTable {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    
+    #dataTable th {
+      background: var(--primary-color);
+      color: white;
+      padding: 12px 8px;
+      text-align: left;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    #dataTable td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    #dataTable tbody tr:hover {
+      background: #f8f9fa;
+    }
+    
+    #dataTable tbody tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    
+    #dataTable tbody tr:nth-child(even):hover {
+      background: #e9ecef;
+    }
+    /* INFROGRÁFICOS */
+    #infographicsContainer {
+      position: absolute;
+      top: 184px; left: 0; right: 0; bottom: 0;
+      background: #F7F7F7;
+      display: none;
+      z-index: 2000;
+      overflow-y: auto;
+      padding: 32px 0;
+      min-height: 600px;
+      transition: opacity var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .carousel {
+      position: relative;
+      width: 98vw;
+      max-width: 900px;
+      height: 70vh;
+      max-height: 600px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .carousel:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+    }
+
+    .carousel-arrow {
+      background: rgba(255, 255, 255, 0.95);
+      border: none;
+      color: var(--primary-color);
+      font-size: 2.2rem;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .carousel-arrow.left { left: 20px; }
+    .carousel-arrow.right { right: 20px; }
+
+    .carousel-arrow:hover {
+      background: var(--primary-color);
+      color: #fff;
+      transform: translateY(-50%) scale(1.1);
+      box-shadow: 0 6px 16px rgba(0,48,87,0.15);
+    }
+
+    .carousel-slides {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      opacity: 0;
+      position: absolute;
+      top: 0; left: 0;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      padding: 20px;
+    }
+
+    .carousel-slide.active {
+      opacity: 1;
+      z-index: 2;
+    }
+
+    .carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      background: #ffffff;
+      transition: transform 0.3s ease;
+    }
+
+    .carousel-slide.active img {
+      transform: scale(1);
+    }
+
+    .carousel-indicators {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      backdrop-filter: blur(8px);
+    }
+
+    .indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #e0e8f0;
+      border: 2px solid var(--primary-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .indicator:hover {
+      transform: scale(1.2);
+      background: var(--primary-color);
+    }
+
+    .indicator.active {
+      background: var(--primary-color);
+      border: 2px solid var(--secondary-color);
+      transform: scale(1.2);
+    }
+
+    @media (max-width: 900px) {
+      .carousel { 
+        max-width: 95vw; 
+        height: 60vh;
+        max-height: 500px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .carousel { 
+        max-width: 92vw; 
+        height: 50vh;
+        max-height: 400px;
+      }
+      .carousel-arrow { 
+        font-size: 1.5rem; 
+        width: 40px; 
+        height: 40px; 
+      }
+      .carousel-indicators { 
+        gap: 10px; 
+        padding: 8px;
+      }
+      .indicator { 
+        width: 8px; 
+        height: 8px; 
+      }
+    }
+
+    /* Animação de transição suave */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .carousel-slide.active {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* RESPONSIVIDADE */
+    @media (max-width: 1100px) {
+      .sidebar-left, .sidebar-right {
+        width: 95vw;
+        left: 2.5vw !important;
+        right: 2.5vw !important;
+        top: 180px;
+        max-height: 40vh;
+        padding: 18px 8px 12px 8px;
+      }
+      
+      /* Resetar sidebar esquerdo para mobile */
+      .sidebar-left {
+        position: fixed;
+        top: 100px;
+        left: 2.5vw;
+        width: 95vw;
+        height: auto;
+        max-height: 40vh;
+        border-radius: 0 0 16px 16px;
+        border: 1.5px solid #e0e0e0;
+        padding-top: 18px;
+        background: linear-gradient(135deg, #ffffff 80%, #f4f6f8 100%);
+      }
+      
+      /* Resetar mapa para mobile */
+      #map {
+        left: 0;
+        top: 100px;
+      }
+      
+      #infographicsContainer .carousel {
+        width: 99vw;
+        max-width: 99vw;
+        height: 60vw;
+        max-height: 320px;
+      }
+    }
+    @media (max-width: 768px) {
+      .top-header {
+        height: 56px;
+        padding: 4px 0;
+      }
+      .top-header img {
+        height: 36px;
+      }
+      .menu-bar {
+        top: 56px;
+        height: 44px;
+        padding: 0 4px;
+      }
+      #map {
+        top: 100px;
+        left: 0;
+      }
+      .sidebar-left, .sidebar-right {
+        position: fixed;
+        top: 100px;
+        width: 100vw;
+        left: 0 !important;
+        right: 0 !important;
+        max-height: 40vh;
+        padding: 8px 2vw 8px 2vw;
+        border-radius: 0 0 16px 16px;
+        z-index: 2001;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+      }
+      .sidebar-left {
+        position: fixed;
+        transform: translateY(-100%);
+        transition: transform 0.3s;
+        top: 100px;
+        left: 0;
+        width: 100vw;
+        height: auto;
+        max-height: 40vh;
+        border-radius: 0 0 16px 16px;
+        border: 1.5px solid #e0e0e0;
+        padding-top: 8px;
+        background: linear-gradient(135deg, #ffffff 80%, #f4f6f8 100%);
+      }
+      .sidebar-right {
+        transform: translateY(-100%);
+        transition: transform 0.3s;
+      }
+      .sidebar-left.active, .sidebar-right.active {
+        transform: translateY(0);
+      }
+      .nav-right button {
+        font-size: 1rem;
+        padding: 8px 8px;
+      }
+    #infographicsContainer {
+        top: 100px;
+        padding: 8px 0;
+      }
+      #infographicsContainer .carousel {
+        width: 99vw;
+        max-width: 99vw;
+        height: 45vw;
+        max-height: 180px;
+      }
+      .carousel-arrow { font-size: 1.3rem; width: 32px; height: 32px; }
+      .carousel-indicators { gap: 6px; }
+      .indicator { width: 8px; height: 8px; }
+      .entities-list, .totals-card, #centralDetails {
+        font-size: 0.98rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .sidebar-left, .sidebar-right {
+        top: 90px;
+        max-height: 32vh;
+        font-size: 0.93rem;
+        padding: 6px 1vw 6px 1vw;
+      }
+      .sidebar-left {
+        position: fixed;
+        top: 90px;
+        left: 0;
+        width: 100vw;
+        height: auto;
+        max-height: 32vh;
+        border-radius: 0 0 16px 16px;
+        border: 1.5px solid #e0e0e0;
+        padding-top: 6px;
+        background: linear-gradient(135deg, #ffffff 80%, #f4f6f8 100%);
+      }
+      .entities-list .entity-item, .central-item, .school-item {
+        font-size: 0.91rem;
+      }
+      #infographicsContainer .carousel {
+        height: 38vw;
+        max-height: 100px;
+      }
+      .carousel-arrow { font-size: 1rem; width: 24px; height: 24px; }
+    }
+    /* SCROLLBAR PERSONALIZADA */
+    ::-webkit-scrollbar {
+      width: 8px;
+      background: #e9ecef;
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cce0ff;
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #b0c4de;
+    }
+    /* Overlay para sidebars no mobile */
+    @media (max-width: 768px) {
+      .sidebar-left, .sidebar-right {
+        position: fixed;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw;
+        border-radius: 0 0 16px 16px;
+        z-index: 2001;
+      }
+    }
+    /* Botão para abrir sidebars no mobile */
+    .open-sidebar-btn {
+      display: none;
+      position: fixed;
+      top: 110px;
+      left: 10px;
+      z-index: 2100;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      .open-sidebar-btn { display: block; }
+    }
+    .school-card {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      border: 1px solid #e0e0e0;
+    }
+
+    .school-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .school-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-bottom: 1px solid #eee;
+      background-color: #f5f5f5;
+    }
+
+    .school-info {
+      padding: 16px;
+    }
+
+    .school-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 8px;
+    }
+
+    .school-details {
+      font-size: 0.95rem;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .school-details > div {
+      margin-bottom: 4px;
+    }
+
+    .school-capacity {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+      font-weight: 600;
+      color: var(--secondary-color);
+      font-size: 1.1rem;
+    }
+
+    #schoolsList {
+      padding: 8px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .school-list-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .school-list-item:hover {
+      background-color: #f0f8ff;
+    }
+
+    .school-list-item.selected {
+      background-color: #e0efff;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .school-list-item .school-name {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .school-list-item .school-year {
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .school-details-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-top: 16px;
+    }
+
+    .school-details-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background-color: #f5f5f5;
+    }
+
+    .school-details-content {
+      padding: 16px;
+    }
+
+    .school-details-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 12px;
+    }
+
+    .school-details-info {
+      margin-bottom: 8px;
+      color: #666;
+    }
+
+    .school-details-info i {
+      width: 20px;
+      color: var(--primary-color);
+      margin-right: 8px;
+    }
+
+    .school-details-capacity {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+      font-weight: 600;
+      color: var(--secondary-color);
+    }
+
+    /* =========================================================================
+       ESTILOS DOS FILTROS
+    ========================================================================= */
+    .filters-section {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+      border: 1px solid #dee2e6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .filters-section h3 {
+      font-size: 1.1rem;
+      color: var(--dark-blue);
+      margin-bottom: 16px;
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filters-section h3::before {
+      content: '\f0b0';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      color: var(--primary-color);
+    }
+
+    .filter-group {
+      margin-bottom: 14px;
+    }
+
+    .filter-group label {
+      display: block;
+      font-size: 0.95rem;
+      color: var(--dark-blue);
+      margin-bottom: 6px;
+      font-weight: normal;
+    }
+
+    .filter-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      background: var(--white);
+      font-size: 0.95rem;
+      color: var(--dark-blue);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      cursor: pointer;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0,48,87,0.1);
+    }
+
+    .filter-select:hover {
+      border-color: var(--secondary-color);
+    }
+
+    .filter-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .filter-btn {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #B29637;
+      border-radius: 25px;
+      font-size: 0.95rem;
+      font-weight: normal;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #f8f6f2;
+      color: #B29637;
+      box-shadow: 0 2px 8px rgba(178, 150, 55, 0.1);
+    }
+
+    .filter-btn:hover {
+      background: #B29637;
+      color: #f8f6f2;
+      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .filter-btn.secondary {
+      background: transparent;
+      border: 1px solid #d1d5db;
+      color: #6c757d;
+      box-shadow: none;
+      font-size: 0.9rem;
+      padding: 10px 16px;
+    }
+
+    .filter-btn.secondary:hover {
+      background: #f8f9fa;
+      border-color: #adb5bd;
+      color: #495057;
+    }
+
+    /* Responsividade para filtros */
+    @media (max-width: 768px) {
+      .filters-section {
+        padding: 14px;
+        margin-bottom: 16px;
+      }
+      
+      .filter-actions {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .filter-btn {
+        padding: 12px;
+        font-size: 1rem;
+      }
+    }
+    
+    /* Estilos para países clicáveis no mapa */
+    .clickable-country {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .clickable-country:hover {
+      filter: brightness(1.2);
+      stroke-width: 2px;
+      stroke: #ffffff;
+    }
+    
+    .clickable-country:active {
+      filter: brightness(1.4);
+      transform: scale(1.02);
+    }
+    
+    /* Mensagem de seleção de país */
+    #countrySelectionMessage {
+      animation: slideInRight 0.3s ease-out;
+    }
+    
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    /* Estilos para card de informações da central */
+    .central-info-card {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: white;
+      border: 2px solid #023047;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      width: 300px;
+      max-width: 90vw;
+      display: none;
+      animation: slideInRight 0.3s ease-out;
+    }
+    
+    .central-info-header {
+      background: #023047;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 6px 6px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .central-info-header h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+    
+    .close-central-info {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    
+    .close-central-info:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .central-info-content {
+      padding: 16px;
+    }
+    
+    .central-info-content p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: #333;
+    }
+    
+    /* Estilos para seta de rolagem */
+    .scroll-arrow {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #023047;
+      color: white;
+      border-radius: 25px;
+      padding: 12px 20px;
+      cursor: pointer;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+    }
+    
+    .scroll-arrow:hover {
+      background: #034a6b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .arrow-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .arrow-icon {
+      font-size: 18px;
+      animation: bounce 1s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    
+    /* Estilos para container do gráfico */
+    .chart-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      display: none;
+      z-index: 2000;
+      overflow-y: auto;
+    }
+    
+    .chart-content {
+      background: white;
+      padding: 30px;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    .chart-content h2 {
+      margin: 0 0 20px 0;
+      color: #023047;
+      text-align: center;
+      font-size: 24px;
+      border-bottom: 2px solid #023047;
+      padding-bottom: 10px;
+    }
+    
+    .chart-wrapper {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 70vh;
+      width: 100%;
+    }
+    
+    .chart-wrapper canvas {
+      max-width: 100%;
+      max-height: 100%;
+      width: 100% !important;
+      height: auto !important;
+    }
+    
+    /* Botão fechar para o gráfico */
+    .chart-close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #023047;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    
+    .chart-close-btn:hover {
+      background: #034a6b;
+    }
+  </style>
+</head>
+<body>
+  <!-- POP UP DE INSTRUÇÕES -->
+  <div id="instructionModal">
+    <div class="instruction-content">
+      <h2>Bem-vindo ao Mapa Interativo com alguns dados das Centrais do Dízimo no Brasil e no mundo!</h2>
+      <ul>
+        <li>Clique no botão "Entidades Atendidas" para ver a quantidade de doações realizadas por cada Central do Dízimo, as entidades atendidas e o ano em que foram beneficiadas.</li>
+        <li>Clique no botão "Escolas Profissionalizantes" para ver as escolas doadas, sua localização, informações sobre o edifício e cursos oferecidos, além de suas capacidades de formação de alunos por ano.</li>
+        <li>Use o botão "Ver Gráficos" para visualizar a evolução histórica das doações.</li>
+        <li>Use o botão "Infográficos" para ver algumas informações pontuais sobre as doações realizadas.</li>
+        <li>Clique em qualquer espaço do mapa para voltar ao resumo global.</li>
+      </ul>
+      <button id="closeInstructionBtn">Vamos Lá!</button>
+    </div>
+  </div>
+
+  <!-- HEADER UNIFICADO (LOGO E BOTÕES) -->
+  <div class="unified-header">
+    <div class="header-top">
+      <div class="logo-section">
+        <img src="logo.png" alt="Logo PRÓ-VIDA">
+      </div>
+    </div>
+    <div class="header-bottom">
+      <div class="nav-container">
+        <button id="howToNavigateBtn" class="help-btn">
+          <i class="fas fa-question-circle"></i> Como Navegar
+        </button>
+        <div class="nav-buttons">
+          <button id="donationsBtn" class="active">Entidades Atendidas</button>
+          <button id="schoolsBtn">Escolas Profissionalizantes</button>
+          <button id="infographicsBtn">Infográficos</button>
+          <button id="chartBtn">Ver Gráfico</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE INSTRUÇÕES -->
+  <div id="instructionsModal" class="instructions-modal">
+    <div class="instructions-content">
+      <div class="instructions-header">
+        <h2><i class="fas fa-compass"></i> Como Navegar</h2>
+        <button id="closeInstructionsBtn" class="close-instructions-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="instructions-body">
+        <div class="instruction-section">
+          <h3><i class="fas fa-mouse-pointer"></i> Navegação no Mapa</h3>
+          <ul>
+            <li><i class="fas fa-search-plus"></i> <strong>Zoom:</strong> Use a roda do mouse ou os botões +/- no canto inferior direito</li>
+            <li><i class="fas fa-arrows-alt"></i> <strong>Mover o mapa:</strong> Clique e arraste para navegar</li>
+            <li><i class="fas fa-map-marker-alt"></i> <strong>Pins:</strong> Clique nos pins dourados para ver detalhes e fazer zoom máximo</li>
+            <li><i class="fas fa-home"></i> <strong>Voltar ao início:</strong> Clique em qualquer área vazia do mapa</li>
+          </ul>
+        </div>
+        <div class="instruction-section">
+          <h3><i class="fas fa-list"></i> Seções Disponíveis</h3>
+          <ul>
+            <li><i class="fas fa-hand-holding-heart"></i> <strong>Entidades Atendidas:</strong> Visualize doações e use filtros por cidade, país e ano</li>
+            <li><i class="fas fa-school"></i> <strong>Escolas Profissionalizantes:</strong> Explore escolas profissionalizantes e suas capacidades</li>
+            <li><i class="fas fa-chart-bar"></i> <strong>Infográficos:</strong> Acesse dados visuais e estatísticas</li>
+          </ul>
+        </div>
+        <div class="instruction-section">
+          <h3><i class="fas fa-filter"></i> Filtros e Funcionalidades</h3>
+          <ul>
+            <li><i class="fas fa-search"></i> <strong>Filtros:</strong> Na seção "Entidades Atendidas", use os filtros para refinar sua busca</li>
+            <li><i class="fas fa-chart-line"></i> <strong>Gráficos:</strong> Clique em "Ver Gráfico" para visualizar evolução temporal</li>
+            <li><i class="fas fa-info-circle"></i> <strong>Detalhes:</strong> Clique nos pins para informações detalhadas</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAPA -->
+  <div id="map"></div>
+
+  <!-- SIDEBAR ESQUERDA (DOAÇÕES) -->
+  <div class="sidebar-left" id="sidebarLeft">
+    <div id="donationsSidebar">
+      <div class="sidebar-header">
+      <h2>Resumo de Doações</h2>
+        <button id="viewDataTableBtn" class="view-table-btn" title="Ver dados em tabela">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+      
+      <!-- Menu de Filtros -->
+      <div class="filters-section">
+        <h3>Filtros</h3>
+        <div class="filter-group">
+          <label for="filterCentral">Central:</label>
+          <select id="filterCentral" class="filter-select">
+            <option value="">Todas as centrais</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterCidade">Cidade da Entidade:</label>
+          <select id="filterCidade" class="filter-select">
+            <option value="">Todas as cidades</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterPais">País da Entidade:</label>
+          <select id="filterPais" class="filter-select">
+            <option value="">Todos os países</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterAno">Ano da Doação:</label>
+          <select id="filterAno" class="filter-select">
+            <option value="">Todos os anos</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button id="applyFiltersBtn" class="filter-btn">
+            <i class="fas fa-filter"></i> Aplicar Filtros
+          </button>
+          <button id="clearFiltersBtn" class="filter-btn secondary">
+            <i class="fas fa-times"></i> Limpar
+          </button>
+        </div>
+      </div>
+      
+      <div class="totals-card">
+        <div>
+          <i class="fas fa-hand-holding-heart"></i>
+          <strong id="totalDoacoes">0</strong><br>Doações
+        </div>
+      </div>
+      <div class="entities-list" id="entitiesList">
+        <div class="entity-item">
+          Selecione uma central para ver os detalhes ou visualize os totais agregados.
+        </div>
+      </div>
+      <button id="showChartBtn">
+        <i class="fas fa-chart-line"></i> Ver Gráfico
+      </button>
+    </div>
+
+    <div id="schoolsSidebar" style="display: none;">
+      <h2>Escolas Profissionalizantes</h2>
+      <div class="totals-card">
+        <div>
+          <i class="fas fa-school"></i>
+          <strong id="totalEscolas">0</strong><br>Escolas
+        </div>
+      </div>
+      <div class="entities-list" id="schoolsList">
+        <!-- Lista simples de escolas será inserida aqui -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DIREITA (DOAÇÕES E DETALHES DE ESCOLAS) -->
+  <div class="sidebar-right" id="sidebarRight">
+    <div id="donationsDetails">
+      <h2>Centrais e Países</h2>
+      <div id="centralDetails">Nenhuma central selecionada</div>
+      <div id="centraisList"></div>
+    </div>
+
+    <div id="schoolDetails" style="display: none;">
+      <h2>Detalhes da Escola</h2>
+      <div id="selectedSchoolInfo">
+        Selecione uma escola para ver os detalhes.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DO GRÁFICO -->
+  <div id="chartModal">
+    <div class="modal-content">
+      <button class="close-modal" id="closeChartModal">×</button>
+      <canvas id="donationsChart"></canvas>
+    </div>
+  </div>
+
+  <!-- MODAL DA TABELA DE DADOS -->
+  <div id="dataTableModal">
+    <div class="modal-content table-modal">
+      <button class="close-modal" id="closeDataTableModal">×</button>
+      <h2>Dados Filtrados</h2>
+      <div class="table-container">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>Data da Doação</th>
+              <th>Central</th>
+              <th>Cidade da Entidade</th>
+              <th>Entidade</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody">
+            <!-- Dados serão inseridos aqui -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER DE INFROGRÁFICOS -->
+  <div id="infographicsContainer">
+    <div class="carousel">
+      <button class="carousel-arrow left" id="carouselPrev" aria-label="Anterior"><i class="fas fa-chevron-left"></i></button>
+      <div class="carousel-slides">
+        <div class="carousel-slide active"><img src="info1.png" alt="Infográfico 1"></div>
+        <div class="carousel-slide"><img src="info2.png" alt="Infográfico 2"></div>
+        <div class="carousel-slide"><img src="info3.png" alt="Infográfico 3"></div>
+        <div class="carousel-slide"><img src="info4.png" alt="Infográfico 4"></div>
+        </div>
+      <button class="carousel-arrow right" id="carouselNext" aria-label="Próximo"><i class="fas fa-chevron-right"></i></button>
+      </div>
+
+  <!-- CONTAINER DO GRÁFICO -->
+  <div id="chartContainer" class="chart-container">
+    <div class="chart-content">
+      <button class="chart-close-btn" onclick="closeChartContainer()">×</button>
+      <h2>Evolução Acumulativa das Doações</h2>
+      <div class="chart-wrapper">
+        <canvas id="donationsChart"></canvas>
+      </div>
+    </div>
+  </div>
+    <div class="carousel-indicators">
+      <span class="indicator active" data-index="0"></span>
+      <span class="indicator" data-index="1"></span>
+      <span class="indicator" data-index="2"></span>
+      <span class="indicator" data-index="3"></span>
+    </div>
+  </div>
+
+  <!-- CARD DE DETALHES DA ESCOLA NA DIREITA -->
+  <div class="school-details-card-right" id="schoolDetailsCard">
+    <div style="padding: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: var(--dark-blue); font-size: 1.3rem;">Detalhes da Escola</h2>
+        <button id="closeSchoolCard" style="background: #B29637; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="school-details-card">
+        <img src="" alt="" class="school-details-image" id="cardSchoolImage">
+        <div class="school-details-content">
+          <div class="school-details-title" id="cardSchoolName"></div>
+          <div class="school-details-info" id="cardSchoolInfo"></div>
+          <div class="school-details-capacity" id="cardSchoolCapacity"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS EXTERNOS -->  
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" crossorigin="anonymous"></script>
+  <script>
+    // Verificar se Chart.js foi carregado corretamente
+    window.addEventListener('load', function() {
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js não foi carregado corretamente');
+      } else {
+        console.log('Chart.js carregado com sucesso, versão:', Chart.version);
+      }
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    /* =========================================================================
+       Evento para fechar o pop-up de instruções
+    ========================================================================= */
+    document.getElementById('closeInstructionBtn').addEventListener('click', function() {
+      document.getElementById('instructionModal').style.display = 'none';
+      map.invalidateSize();
+    });
+
+    // Função para destruir gráfico de forma segura
+    function destroyChart() {
+      if (window.donationsChart) {
+        try {
+          // Para Chart.js v4+, usar destroy() diretamente
+          if (typeof window.donationsChart.destroy === 'function') {
+            window.donationsChart.destroy();
+          }
+          window.donationsChart = null;
+        } catch (e) {
+          console.log('Erro ao destruir gráfico:', e);
+          window.donationsChart = null;
+        }
+      }
+    }
+
+    // Event listener para fechar o modal do gráfico
+    document.getElementById('closeChartModal').addEventListener('click', function() {
+      document.getElementById('chartModal').style.display = 'none';
+      destroyChart();
+    });
+
+    // Fechar modal clicando fora dele
+    document.getElementById('chartModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        document.getElementById('chartModal').style.display = 'none';
+        destroyChart();
+      }
+    });
+
+    // Event listener para fechar o modal da tabela
+    document.getElementById('closeDataTableModal').addEventListener('click', function() {
+      document.getElementById('dataTableModal').style.display = 'none';
+    });
+
+    // Fechar modal da tabela clicando fora dele
+    document.getElementById('dataTableModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        document.getElementById('dataTableModal').style.display = 'none';
+      }
+    });
+
+    /* =========================================================================
+       Configuração do Mapa
+    ========================================================================= */
+    const maxBounds = L.latLngBounds([[-80, -180], [85, 60]]);
+    const centralZoom = 16;
+    var map = L.map('map', {
+      center: [20, -20],
+      zoom: 3,
+      minZoom: 3,
+      maxBounds: maxBounds,
+      maxBoundsViscosity: 1.0,
+      zoomControl: false,
+      attributionControl: false
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+
+    L.control.zoom({
+      position: 'bottomright',
+      zoomInText: '<i class="fas fa-plus"></i>',
+      zoomOutText: '<i class="fas fa-minus"></i>'
+    }).addTo(map);
+
+    // Dicionário de equivalência de nomes de países
+    const countryNameMap = {
+      'brasil': 'brazil',
+      'Estados Unidos': 'United States',
+      'brésil': 'brazil',
+      'br': 'brazil',
+      'italia': 'italy',
+      'itália': 'italy',
+      'it': 'italy',
+      'argentina': 'argentina',
+      'ar': 'argentina',
+      'bolivia': 'bolivia',
+      'bolívia': 'bolivia',
+      'bo': 'bolivia',
+      'chile': 'chile',
+      'cl': 'chile',
+      'portugal': 'portugal',
+      'pt': 'portugal',
+      'uruguai': 'uruguay',
+      'espanha': 'spain',
+      'polonia': 'poland',
+      'angola': 'angola',
+      'romania': 'romania',
+      'ethiopia': 'ethiopia',
+      'etiopia': 'ethiopia',
+      // Adicione outros países conforme necessário
+    };
+
+    function normalizeCountryName(name) {
+      if (!name) return '';
+      const n = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      return countryNameMap[n] || n;
+    }
+
+    let countryLayer = null;
+
+    // --- Supabase client ---
+    const supabaseUrl = 'https://wmxwkvmnpfcrylxvkbdi.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndteHdrdm1ucGZjcnlseHZrYmRpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0Mzc0MDA5NSwiZXhwIjoyMDU5MzE2MDk1fQ.JEt1mEewe3p8U8gxmGchlgrbHpaptuYKRs44vWppCPk';
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    
+    // Teste de conexão com Supabase
+    console.log('Testando conexão com Supabase...');
+    
+    // Teste 1: Verificar se a view existe
+    _supabase.from('zi_vw_dados_infografico_v2').select('count').limit(1).then(({ data, error }) => {
+      if (error) {
+        console.error('Erro na conexão com Supabase:', error);
+      } else {
+        console.log('Conexão com Supabase estabelecida com sucesso');
+      }
+    });
+    
+    // Teste 2: Verificar se há problemas de RLS
+    console.log('Testando se há problemas de RLS...');
+    _supabase.auth.getSession().then(({ data: sessionData, error: sessionError }) => {
+      if (sessionError) {
+        console.error('Erro ao verificar sessão:', sessionError);
+      } else {
+        console.log('Sessão atual:', sessionData.session ? 'Autenticado' : 'Não autenticado');
+        console.log('Usuário:', sessionData.session?.user?.email || 'N/A');
+        console.log('Role:', sessionData.session?.user?.role || 'N/A');
+      }
+    });
+    
+    // Teste adicional para verificar a estrutura da view
+    console.log('Testando acesso à view zi_vw_dados_infografico_v2...');
+    
+    // Teste 1: Consulta simples
+    _supabase.from('zi_vw_dados_infografico_v2').select('*').limit(1).then(({ data, error }) => {
+      if (error) {
+        console.error('Erro ao acessar a view:', error);
+        console.log('Detalhes do erro:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+      } else if (data && data.length > 0) {
+        console.log('View acessada com sucesso!');
+        console.log('Estrutura da view:', Object.keys(data[0]));
+        console.log('Primeiro registro:', data[0]);
+        console.log('Total de colunas:', Object.keys(data[0]).length);
+      } else {
+        console.log('View acessível mas sem dados - testando outras abordagens...');
+        
+        // Teste 2: Tentar sem limit
+        _supabase.from('zi_vw_dados_infografico_v2').select('*').then(({ data: data2, error: error2 }) => {
+          if (error2) {
+            console.error('Erro na consulta sem limit:', error2);
+          } else {
+            console.log('Consulta sem limit retornou:', data2 ? data2.length : 0, 'registros');
+          }
+        });
+        
+        // Teste 3: Tentar com count
+        _supabase.from('zi_vw_dados_infografico_v2').select('*', { count: 'exact' }).then(({ count, error: error3 }) => {
+          if (error3) {
+            console.error('Erro na consulta com count:', error3);
+          } else {
+            console.log('Total de registros na view:', count);
+          }
+        });
+        
+        // Teste 4: Tentar com uma coluna específica
+        _supabase.from('zi_vw_dados_infografico_v2').select('central').limit(5).then(({ data: data4, error: error4 }) => {
+          if (error4) {
+            console.error('Erro na consulta da coluna central:', error4);
+          } else {
+            console.log('Consulta da coluna central retornou:', data4 ? data4.length : 0, 'registros');
+            if (data4 && data4.length > 0) {
+              console.log('Primeiros valores de central:', data4.map(item => item.central));
+            }
+          }
+        });
+      }
+    });
+
+    // --- Estado global ---
+    let donationsSummary = [];      // resumo por central
+    let entityContext = { type: 'global' };
+    let currentPage = 0;
+    const PAGE_LIMIT = 50;
+
+    // Variável global para o total geral de doações
+    let totalDoacoesGeral = 0;
+    
+    // Variável global para a camada de marcadores
+    let markersLayer = null;
+
+    // Função utilitária para converter string de coordenada para número
+    function parseCoord(coord) {
+      if (!coord) return null;
+      return parseFloat(coord.replace(',', '.'));
+    }
+
+    // Estado global para países e centrais
+    let paisesCentrais = [];
+
+    // Busca dados da tabela zc_vw_tela_inicial_infografico
+    async function fetchPaisesCentrais() {
+      const { data, error } = await _supabase
+        .from('zc_vw_tela_inicial_infografico')
+        .select('qtd_doacoes,central,pais_entidade,latitude_central,longitude_central');
+      if (error) {
+        console.error('Erro ao buscar países/centrais:', error);
+        return [];
+      }
+      // Converte lat/lng para número
+      const arr = data.map(item => ({
+        ...item,
+        lat: parseCoord(item.latitude_central),
+        lng: parseCoord(item.longitude_central),
+        qtd_doacoes: Number(item.qtd_doacoes) || 0
+      }));
+      // Atualiza o total geral
+      totalDoacoesGeral = arr.reduce((sum, c) => sum + (c.qtd_doacoes || 0), 0);
+      return arr;
+    }
+
+    // Sidebar esquerdo: mostrar qtd_doacoes (somatória geral se nenhuma central selecionada)
+    function updateTotalDoacoesSidebar(centralSelecionada = null) {
+      let total = 0;
+      if (centralSelecionada) {
+        const c = paisesCentrais.find(x => x.central === centralSelecionada);
+        total = c ? c.qtd_doacoes : 0;
+      } else {
+        total = totalDoacoesGeral;
+      }
+      document.getElementById('totalDoacoes').innerText = total;
+    }
+
+    // Estado para paginação
+    let entidadesPage = 0;
+    let entidadesHasMore = false;
+    let entidadesUltimoFiltro = null;
+
+    // Função para buscar entidades paginadas
+    async function fetchEntidades(filtro, valor, page = 0, limit = 50) {
+      let query = _supabase
+        .from('zi_vw_dados_infografico_v2')
+        .select('nome_entidade,tipo_atend_entidade', { count: 'exact' })
+        .range(page * limit, (page + 1) * limit - 1);
+      if (filtro && valor) {
+        query = query.eq(filtro, valor);
+      }
+      const { data, error, count } = await query;
+      if (error) {
+        console.error('Erro ao buscar entidades:', error);
+        return { data: [], count: 0 };
+      }
+      return { data, count };
+    }
+
+    // Função para exibir entidades no sidebar esquerdo
+    async function loadEntidadesSidebar(filtro, valor, page = 0) {
+      entidadesUltimoFiltro = { filtro, valor };
+      entidadesPage = page;
+      const { data, count } = await fetchEntidades(filtro, valor, page);
+      console.log({data, count, page, filtro, valor}); // DEBUG
+      const listEl = document.getElementById('entitiesList');
+      if (page === 0) listEl.innerHTML = '';
+      data.forEach(ent => {
+        const div = document.createElement('div');
+        div.className = 'entity-item';
+        div.innerHTML = `<div>${ent.nome_entidade}</div><div style="font-size:0.92em;color:#555;margin-top:2px;">${ent.tipo_atend_entidade}</div>`;
+        listEl.appendChild(div);
+      });
+      // Paginação
+      entidadesHasMore = ((page + 1) * 50) < count;
+      // Remover botão antigo se existir
+      const old = document.getElementById('loadMoreBtn');
+      if (old) old.remove();
+      if (entidadesHasMore) {
+        const btn = document.createElement('button');
+        btn.id = 'loadMoreBtn';
+        btn.innerHTML = '<i class="fas fa-plus-circle" style="margin-right:8px;"></i> <span>Carregar mais</span>';
+        btn.style.margin = '18px auto 0 auto';
+        btn.style.display = 'block';
+        btn.style.background = 'linear-gradient(90deg, #003057 60%, #00509e 100%)';
+        btn.style.color = '#fff';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '8px';
+        btn.style.fontSize = '1.08rem';
+        btn.style.fontWeight = '600';
+        btn.style.padding = '14px 0';
+        btn.style.width = '100%';
+        btn.style.cursor = 'pointer';
+        btn.style.boxShadow = '0 2px 8px rgba(0,48,87,0.13)';
+        btn.style.transition = 'background 0.2s, transform 0.2s';
+        btn.onmouseover = () => { btn.style.background = 'linear-gradient(90deg, #00509e 60%, #003057 100%)'; btn.style.transform = 'scale(1.03)'; };
+        btn.onmouseout  = () => { btn.style.background = 'linear-gradient(90deg, #003057 60%, #00509e 100%)'; btn.style.transform = 'scale(1)'; };
+        btn.addEventListener('click', () => {
+          entidadesPage++;
+          loadEntidadesSidebar(filtro, valor, entidadesPage);
+        });
+        listEl.appendChild(btn);
+      }
+    }
+
+    // Modificar updateCentralDetailsPais para buscar entidades da central
+    function updateCentralDetailsPais(obj) {
+      const paisNorm = normalizeCountryName(obj.pais_entidade);
+      document.getElementById('centralDetails').innerText = `País: ${getCountryDisplayName(paisNorm)} | Central: ${obj.central}`;
+      Array.from(document.getElementsByClassName('central-item'))
+        .forEach(el => el.classList.toggle('selected', el.dataset.central === obj.central));
+      map.flyTo([obj.lat, obj.lng], centralZoom);
+      updateTotalDoacoesSidebar(obj.central);
+      // Buscar entidades da central (sempre começa da página 0)
+      loadEntidadesSidebar('central', obj.central, 0);
+    }
+
+    // Ao clicar em um país (summary), buscar entidades do país
+    function onCountrySummaryClick(paisNorm) {
+      // Buscar o nome original do país para filtrar corretamente
+      const paisOriginal = (paisesCentrais.find(c => normalizeCountryName(c.pais_entidade) === paisNorm) || {}).pais_entidade;
+      if (paisOriginal) {
+        loadEntidadesSidebar('pais_entidade', paisOriginal, 0);
+      }
+    }
+
+    // Modificar populateCentraisListPaises para NÃO buscar entidades ao clicar no país
+    function populateCentraisListPaises() {
+      const container = document.getElementById('centraisList');
+      container.innerHTML = '';
+      // Agrupa centrais por país normalizado
+      const grupos = {};
+      paisesCentrais.forEach(c => {
+        const paisNorm = normalizeCountryName(c.pais_entidade);
+        if (!grupos[paisNorm]) grupos[paisNorm] = [];
+        grupos[paisNorm].push(c);
+      });
+      Object.keys(grupos).forEach(paisNorm => {
+        const details = document.createElement('details');
+        details.open = false;
+        const summary = document.createElement('summary');
+        summary.textContent = getCountryDisplayName(paisNorm) || 'Sem país';
+        summary.style.cursor = 'pointer';
+        // Remover evento de clique no país para buscar entidades
+        details.appendChild(summary);
+        grupos[paisNorm].forEach(c => {
+          const item = document.createElement('div');
+          item.className = 'central-item';
+          item.dataset.central = c.central;
+          item.textContent = c.central;
+          item.addEventListener('click', e => {
+            e.stopPropagation();
+            updateCentralDetailsPais(c);
+          });
+          details.appendChild(item);
+        });
+        container.appendChild(details);
+      });
+    }
+
+    // Ao resetar seleção, limpar lista de entidades
+    function resetCentralSelection() {
+      document.getElementById('centralDetails').innerText = 'Nenhuma central selecionada';
+      Array.from(document.getElementsByClassName('central-item')).forEach(el => el.classList.remove('selected'));
+      updateTotalDoacoesSidebar();
+      document.getElementById('entitiesList').innerHTML = '<div class="entity-item">Selecione uma central ou país para ver as entidades atendidas.</div>';
+    }
+
+    // Ao entrar na tela de doações, resetar seleção
+    async function initPaisesCentraisMode() {
+      paisesCentrais = await fetchPaisesCentrais();
+      loadCountryLayerPaises();
+      loadPaisesCentraisMarkers();
+      populateCentraisListPaises();
+      resetCentralSelection();
+    }
+
+    // Pins das centrais (pins dourados maiores)
+    function loadPaisesCentraisMarkers() {
+      clearMarkers();
+      paisesCentrais.forEach(c => {
+        if (typeof c.lat === 'number' && typeof c.lng === 'number') {
+          L.marker([c.lat, c.lng], {
+            icon: L.icon({ iconUrl: 'pin.png', iconSize: [32,32], iconAnchor: [16,32] })
+          })
+          .addTo(markersLayer)
+          .on('click', e => {
+            L.DomEvent.stopPropagation(e);
+            updateCentralDetailsPais(c);
+          });
+        }
+      });
+    }
+
+    // Pintar países participantes
+    function loadCountryLayerPaises() {
+      if (countryLayer) map.removeLayer(countryLayer);
+      fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+        .then(r => r.json())
+        .then(data => {
+          const paises = new Set(paisesCentrais.map(c => normalizeCountryName(c.pais_entidade)));
+          countryLayer = L.geoJSON(data, {
+            style: f => {
+              const c = normalizeCountryName(f.properties.name);
+              if (paises.has(c)) {
+                return { fillColor:'#023047', fillOpacity:0.5, color:'#fff', weight:1 };
+              }
+              return { fillOpacity:0, weight:0, color:'transparent' };
+            }
+          }).addTo(map);
+        });
+    }
+
+    // Função para restaurar o sidebar direito padrão de doações
+    function restoreSidebarRightDoacoes() {
+      const sidebar = document.getElementById('sidebarRight');
+      sidebar.innerHTML = `
+        <h2>Centrais e Países</h2>
+        <div id="centralDetails">Nenhuma central selecionada</div>
+        <div id="centraisList"></div>
+      `;
+    }
+
+    // Substitui chamada inicial para usar o modo países/centrais
+    window.addEventListener('DOMContentLoaded', () => {
+      initPaisesCentraisMode();
+      document.getElementById('infographicsContainer').style.display = 'none';
+    });
+
+    /* =========================================================================
+       1) Busca resumo de centrais agrupado por país_central e central
+    ========================================================================= */
+    async function fetchSummaryPage(page = 0, limit = 2000) {
+      const from = page * limit;
+      const to   = from + limit - 1;
+      const { data, error } = await _supabase
+        .from('zi_vw_dados_infografico_v2')
+        .select('central,pais_entidade,latitude_central,longitude_central', { count: 'exact' })
+        .range(from, to);
+      if (error) {
+        console.error(`Erro summary p.${page}`, error);
+        return { data: [], done: true };
+      }
+      // Agrupa por central
+      const agrup = {};
+      data.forEach(item => {
+        if (!agrup[item.central]) {
+          agrup[item.central] = {
+            central: item.central,
+            country: item.pais_entidade,
+            lat: parseCoord(item.latitude_central),
+            lng: parseCoord(item.longitude_central),
+            totalDoacoes: 0
+          };
+        }
+        agrup[item.central].totalDoacoes++;
+      });
+      return {
+        data: Object.values(agrup),
+        done: data.length < limit
+      };
+    }
+
+    async function carregarResumo() {
+      let page = 0, tudo = [];
+      while (true) {
+        const { data, done } = await fetchSummaryPage(page, 2000);
+        tudo = tudo.concat(data);
+        if (done) break;
+        page++;
+      }
+      donationsSummary = tudo;
+      initPaisesCentraisMode();
+    }
+
+    /* =========================================================================
+       2) Sidebar direito: agrupa centrais por país_central
+    ========================================================================= */
+    function populateCentraisList() {
+      const container = document.getElementById('centraisList');
+      container.innerHTML = '';
+      // Agrupa centrais por país_central
+      const grupos = {};
+      donationsSummary.forEach(c => {
+        if (!grupos[c.country]) grupos[c.country] = [];
+        grupos[c.country].push(c);
+      });
+      Object.keys(grupos).forEach(pais => {
+        const details = document.createElement('details');
+        details.open = false;
+        const summary = document.createElement('summary');
+        summary.textContent = pais || 'Sem país';
+        details.appendChild(summary);
+        grupos[pais].forEach(c => {
+          const item = document.createElement('div');
+          item.className = 'central-item';
+          item.dataset.central = c.central;
+          item.textContent = c.central;
+          item.addEventListener('click', e => {
+            e.stopPropagation();
+            updateCentralDetails(c);
+          });
+          details.appendChild(item);
+        });
+        container.appendChild(details);
+      });
+    }
+
+    /* =========================================================================
+       3) Pins das centrais: usa lat/lng convertidos
+    ========================================================================= */
+    function loadDonationMarkers() {
+      clearMarkers();
+      donationsSummary.forEach(c => {
+        if (typeof c.lat === 'number' && typeof c.lng === 'number') {
+          L.marker([c.lat, c.lng], {
+            icon: L.icon({ iconUrl: 'pin.png', iconSize: [20,20], iconAnchor: [10,20] })
+          })
+          .addTo(markersLayer)
+          .on('click', e => {
+          L.DomEvent.stopPropagation(e);
+            updateCentralDetails(c);
+          });
+        }
+      });
+    }
+
+    /* =========================================================================
+       4) Sidebar esquerdo: lista entidades, nome e tipo embaixo
+    ========================================================================= */
+    async function fetchEntitiesPage(page = 0) {
+      const from = page * PAGE_LIMIT;
+      const to   = from + PAGE_LIMIT - 1;
+      let q = _supabase
+        .from('zi_vw_dados_infografico_v2')
+        .select('nome_entidade,tipo_atend_entidade,num_entidade,cidade_entidade', { count: 'exact' })
+        .range(from, to);
+      if (entityContext.type === 'central') {
+        q = q.eq('central', entityContext.central);
+      }
+      if (entityContext.type === 'country') {
+        q = q.eq('pais_entidade', entityContext.country);
+      }
+      const { data, error, count } = await q;
+      if (error) {
+        console.error('Erro fetchEntitiesPage', error);
+        return { data: [], count: 0 };
+      }
+      return { data, count };
+    }
+
+    async function loadEntityPage(page = 0) {
+      const { data, count } = await fetchEntitiesPage(page);
+      console.log({data, count}); // DEBUG: Verificar se count está vindo corretamente
+      const listEl = document.getElementById('entitiesList');
+      if (page === 0) listEl.innerHTML = '';
+      data.forEach(ent => {
+        const div = document.createElement('div');
+        div.className = 'entity-item';
+        div.innerHTML = `<div>${ent.nome_entidade}</div><div style="font-size:0.92em;color:#555;margin-top:2px;">${ent.tipo_atend_entidade}</div>`;
+        listEl.appendChild(div);
+      });
+      const old = document.getElementById('loadMoreBtn');
+      if (old) old.remove();
+      if ((page + 1) * PAGE_LIMIT < count) {
+        const btn = document.createElement('button');
+        btn.id = 'loadMoreBtn';
+        btn.textContent = 'Carregar mais';
+        btn.style.margin = '12px auto';
+        btn.style.display = 'block';
+        btn.addEventListener('click', () => {
+          currentPage++;
+          loadEntityPage(currentPage);
+        });
+        listEl.appendChild(btn);
+      }
+    }
+
+    /* =========================================================================
+       5) Funções do modo Doações
+    ========================================================================= */
+    markersLayer = L.layerGroup().addTo(map);
+    const donationSidebarHTML = document.getElementById('sidebarLeft').innerHTML;
+
+    function clearMarkers() {
+      markersLayer.clearLayers();
+    }
+
+    function updateCentralDetails(obj) {
+      entityContext = { type: 'central', central: obj.central };
+      currentPage = 0;
+      document.getElementById('totalDoacoes').innerText = obj.totalDoacoes;
+      loadEntidadesSidebar('central', obj.central, 0);
+      document.getElementById('centralDetails').innerText =
+        `País: ${obj.country} | Central: ${obj.central}`;
+      Array.from(document.getElementsByClassName('central-item'))
+        .forEach(el => el.classList.toggle('selected', el.dataset.central === obj.central));
+      map.flyTo([obj.lat, obj.lng], centralZoom);
+      
+      // Preencher automaticamente o filtro de Central
+      const filterCentral = document.getElementById('filterCentral');
+      if (filterCentral) {
+        filterCentral.value = obj.central;
+        // Atualizar filtros dependentes
+        updateDependentFilters();
+      }
+    }
+
+    // Função para resetar visão global de doações
+    function resetGlobalView() {
+      entityContext = { type: 'global' };
+      currentPage = 0;
+      
+      // Atualizar total de doações
+      document.getElementById('totalDoacoes').innerText = totalDoacoesGeral;
+      
+      // Limpar lista de entidades e mostrar mensagem
+      const entitiesList = document.getElementById('entitiesList');
+      entitiesList.innerHTML = '<div class="entity-item">Selecione filtros para ver as entidades atendidas.</div>';
+      
+      // Ajustar zoom do mapa
+      map.flyTo([20, -20], 3);
+    }
+
+    function populateSchoolsList() {
+      const container = document.getElementById('schoolsList');
+      if (!container) {
+        console.error('Container schoolsList não encontrado');
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      schoolsData.escolas.forEach(school => {
+        const item = document.createElement('div');
+        item.className = 'school-list-item';
+        item.setAttribute('data-school', school.nome);
+        
+        item.innerHTML = `
+          <div class="school-name">${school.nome}</div>
+          <div class="school-year">${school.ano_inauguracao}</div>
+        `;
+        
+        item.addEventListener('click', () => {
+          // Remover seleção anterior
+          Array.from(document.getElementsByClassName('school-list-item'))
+            .forEach(el => el.classList.remove('selected'));
+          
+          // Adicionar seleção ao item atual
+          item.classList.add('selected');
+          
+          // Mostrar detalhes da escola
+          showSchoolDetails(school);
+          
+          // Centralizar no mapa
+          map.flyTo([school.lat, school.lng], centralZoom);
+        });
+        
+        container.appendChild(item);
+      });
+      
+      // Atualizar total de escolas
+      const totalEscolas = document.getElementById('totalEscolas');
+      if (totalEscolas) {
+        totalEscolas.textContent = schoolsData.escolas.length;
+      }
+    }
+
+    // Função para carregar os marcadores das escolas no mapa
+    function loadSchoolMarkers() {
+      clearMarkers();
+      // Criar uma nova camada de marcadores
+      markersLayer = L.layerGroup().addTo(map);
+      
+      schoolsData.escolas.forEach(school => {
+        L.marker([school.lat, school.lng], {
+          icon: L.icon({ 
+            iconUrl: 'pin.png', 
+            iconSize: [32, 32], 
+            iconAnchor: [16, 32] 
+          })
+        })
+        .addTo(markersLayer)
+        .on('click', e => {
+          L.DomEvent.stopPropagation(e);
+          
+          // Selecionar a escola na lista
+          const listItem = document.querySelector(`.school-list-item[data-school="${school.nome}"]`);
+          if (listItem) {
+            // Remover seleção anterior
+            Array.from(document.getElementsByClassName('school-list-item'))
+              .forEach(el => el.classList.remove('selected'));
+            
+            // Adicionar seleção ao item atual
+            listItem.classList.add('selected');
+            
+            // Rolar até o item na lista
+            listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          
+          // Mostrar detalhes da escola
+          showSchoolDetails(school);
+          
+          // Centralizar no mapa
+          map.flyTo([school.lat, school.lng], centralZoom);
+        });
+      });
+    }
+
+    // Função para carregar os marcadores das centrais
+    function loadPaisesCentraisMarkers() {
+      clearMarkers();
+      // Criar uma nova camada de marcadores
+      markersLayer = L.layerGroup().addTo(map);
+      
+      paisesCentrais.forEach(c => {
+        if (typeof c.lat === 'number' && typeof c.lng === 'number') {
+          L.marker([c.lat, c.lng], {
+            icon: L.icon({ iconUrl: 'pin.png', iconSize: [32,32], iconAnchor: [16,32] })
+          })
+          .addTo(markersLayer)
+          .on('click', e => {
+            L.DomEvent.stopPropagation(e);
+            handlePinClick(c);
+          });
+        }
+      });
+    }
+
+    // Função para carregar o layer dos países
+    function loadCountryLayer(mode) {
+      if (countryLayer) map.removeLayer(countryLayer);
+      fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+        .then(r => r.json())
+        .then(data => {
+          countryLayer = L.geoJSON(data, {
+            style: f => {
+              const c = normalizeCountryName(f.properties.name);
+              if (mode === "schools") {
+                return c === "brazil"
+                  ? { fillColor:'#003057', fillOpacity:0.3, color:"#fff", weight:1 }
+                  : { fillOpacity:0, weight:0, color:"transparent" };
+              }
+              if (mode === "donations" && isCountryInView(c)) {
+                return { fillColor:'#023047', fillOpacity:0.3, color:"#fff", weight:1 };
+              }
+              return { fillOpacity:0, weight:0, color:"transparent" };
+            },
+            onEachFeature: (feature, layer) => {
+              if (mode === "donations") {
+                const countryName = normalizeCountryName(feature.properties.name);
+                if (isCountryInView(countryName)) {
+                  // Adicionar evento de clique apenas para países de doações
+                  layer.on('click', () => {
+                    handleCountryClick(countryName, feature.properties.name);
+                  });
+                  
+                  // Adicionar cursor pointer para indicar que é clicável
+                  layer.setStyle({ cursor: 'pointer' });
+                }
+              }
+            }
+          }).addTo(map);
+          
+          // Garantir que os marcadores fiquem por cima do layer dos países
+          if (markersLayer) {
+            // Para LayerGroup, precisamos trazer cada layer individual para frente
+            markersLayer.eachLayer(layer => {
+              if (layer.bringToFront) {
+                layer.bringToFront();
+              }
+            });
+          }
+        });
+    }
+
+    // Função para limpar marcadores
+    function clearMarkers() {
+      if (markersLayer) {
+        map.removeLayer(markersLayer);
+        markersLayer = null;
+      }
+    }
+
+    // Função para mostrar detalhes da escola
+    function showSchoolDetails(school) {
+      const capacidadeFormacao = calcularCapacidadeFormacao(school.ano_inauguracao, school.qtd_por_ano);
+      
+      // Atualizar conteúdo do card
+      document.getElementById('cardSchoolImage').src = `images/${school.imagem}`;
+      document.getElementById('cardSchoolImage').alt = school.nome;
+      document.getElementById('cardSchoolName').textContent = school.nome;
+      document.getElementById('cardSchoolInfo').innerHTML = `
+        <div><i class="fas fa-calendar"></i> Inauguração: ${school.ano_inauguracao}</div>
+        <div><i class="fas fa-map-marker-alt"></i> ${school.endereco}</div>
+        <div><i class="fas fa-user-graduate"></i> Formação por ano: ${school.qtd_por_ano.toLocaleString()} alunos</div>
+      `;
+      document.getElementById('cardSchoolCapacity').innerHTML = `
+        <i class="fas fa-chart-line"></i> Capacidade de Formação até ${new Date().getFullYear()}: ${capacidadeFormacao.toLocaleString()} alunos
+      `;
+      
+      // Mostrar card lateral
+      document.getElementById('schoolDetailsCard').classList.add('show');
+    }
+
+    // Função para inicializar modo escolas
+    function initSchoolsMode() {
+      // Ativar botão
+      document.getElementById('schoolsBtn').classList.add('active');
+      document.getElementById('donationsBtn').classList.remove('active');
+      document.getElementById('infographicsBtn').classList.remove('active');
+      
+      // Configurar sidebars - mostrar sidebar esquerdo e ocultar direito
+      document.getElementById('sidebarLeft').style.display = '';
+      document.getElementById('sidebarRight').style.display = '';
+      document.getElementById('map').style.display = '';
+      document.getElementById('infographicsContainer').style.display = 'none';
+      
+      // Configurar conteúdo dos sidebars
+      document.getElementById('donationsSidebar').style.display = 'none';
+      document.getElementById('schoolsSidebar').style.display = '';
+      document.getElementById('donationsDetails').style.display = 'none';
+      document.getElementById('schoolDetails').style.display = 'block';
+      
+      // Limpar marcadores e camadas anteriores
+      clearMarkers();
+      if (countryLayer) {
+        map.removeLayer(countryLayer);
+        countryLayer = null;
+      }
+      
+      // Carregar dados
+      loadCountryLayer("schools");
+      loadSchoolMarkers();
+      populateSchoolsList();
+      
+      // Ajustar zoom do mapa
+      map.flyTo([-15, -55], 4);
+      
+      // Garantir que o mapa está visível e atualizado
+      map.invalidateSize();
+    }
+
+    // Evento de zoom do mapa
+    map.on('zoomend', function() {
+      const currentZoom = map.getZoom();
+      
+      // Se estiver no modo doações
+      if (document.getElementById('donationsBtn').classList.contains('active')) {
+        if (currentZoom <= 3) {
+          resetGlobalView();
+        }
+      }
+      // Se estiver no modo escolas
+      else if (document.getElementById('schoolsBtn').classList.contains('active')) {
+        if (currentZoom <= 3) {
+          resetSchoolView();
+        }
+      }
+    });
+
+    // Evento de clique no mapa
+    map.on('click', () => {
+      if (document.getElementById('donationsBtn').classList.contains('active')) {
+        resetGlobalView();
+      } else if (document.getElementById('schoolsBtn').classList.contains('active')) {
+        resetSchoolView();
+      }
+    });
+
+    // Eventos dos botões
+    donationsBtn.addEventListener('click', () => {
+      initDonationsMode();
+    });
+
+    schoolsBtn.addEventListener('click', () => {
+      initSchoolsMode();
+      // Ajustar mapa para modo escolas (sem sidebar direito)
+      document.getElementById('map').classList.remove('with-right-sidebar');
+    });
+
+
+
+    // Event listener para o botão da lupa (ver dados em tabela)
+    document.getElementById('viewDataTableBtn').addEventListener('click', () => {
+      showDataTable();
+    });
+
+    // Função para exibir dados filtrados em tabela (espelho da lista do sidebar)
+    function showDataTable() {
+      try {
+        console.log('Gerando tabela com dados da lista do sidebar...');
+        
+        // Buscar os dados que estão sendo exibidos na lista do sidebar
+        const entitiesList = document.getElementById('entitiesList');
+        if (!entitiesList || entitiesList.children.length === 0) {
+          alert('Nenhum dado disponível para exibir na tabela. Aplique os filtros primeiro.');
+          return;
+        }
+
+        // Preencher a tabela com os dados da lista
+        const tbody = document.getElementById('dataTableBody');
+        tbody.innerHTML = '';
+
+        // Iterar pelos itens da lista do sidebar
+        Array.from(entitiesList.children).forEach(item => {
+          // Pular o item de mensagem padrão
+          if (item.textContent.includes('Selecione uma central') || 
+              item.textContent.includes('Nenhuma entidade encontrada') ||
+              item.textContent.includes('Selecione filtros')) {
+            return;
+          }
+          
+          const tr = document.createElement('tr');
+          
+          // Extrair dados do item da lista conforme a estrutura real
+          const entidade = item.querySelector('div:first-child')?.textContent || 'N/A';
+          const detalhes = item.querySelector('div:last-child')?.textContent || '';
+          
+          // Parsear os detalhes que estão no formato: "Central | Tipo | Cidade | Data"
+          const partes = detalhes.split(' | ');
+          const central = partes[0] || 'N/A';
+          const tipo = partes[1] || 'N/A';
+          const cidade = partes[2] || 'N/A';
+          const data = partes[3] || 'N/A';
+          
+          tr.innerHTML = `
+            <td>${data}</td>
+            <td>${central}</td>
+            <td>${cidade}</td>
+            <td>${entidade}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Mostrar o modal
+        document.getElementById('dataTableModal').style.display = 'flex';
+
+      } catch (error) {
+        console.error('Erro ao gerar tabela:', error);
+        alert('Erro ao gerar tabela. Verifique o console para mais detalhes.');
+      }
+    }
+
+    infographicsBtn.addEventListener('click', () => {
+      initInfographicsMode();
+    });
+
+    // Event listener para o botão do gráfico
+    const chartBtn = document.getElementById('chartBtn');
+    if (chartBtn) {
+      chartBtn.addEventListener('click', () => {
+        initChartMode();
+      });
+    }
+
+    // Inicialização
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM carregado, iniciando modo doações...');
+      initDonationsMode();
+    });
+
+    // Lista de países para o modo de doações
+    const donationCountries = ["argentina","bolivia","brazil","chile","italy","portugal","uruguay","spain","poland","angola","romania","ethiopia","united states"];
+    
+    // Função para verificar se um país está na lista de doações
+    function isDonationCountry(country) {
+      return donationCountries.includes(country);
+    }
+    
+    // Lista fixa de países com doações (baseada na view v_pais_entidade)
+    // Inclui nomes em português e inglês para compatibilidade com o mapa
+    const paisesComDoacoes = [
+      // Português
+      'Uruguai', 'Portugal', 'Estados Unidos', 'Espanha', 'Polonia', 
+      'Itália', 'Angola', 'Brasil', 'Argentina', 'Chile', 
+      'Romania', 'Bolivia', 'Ethiopia',
+      // Inglês (nomes do mapa)
+      'Uruguay', 'United States', 'United States of America', 'Spain', 'Poland', 
+      'Italy', 'Brazil', 'Romania', 'Ethiopia'
+    ];
+    
+    // Função para verificar se um país está na lista de países com doações
+    function isCountryInView(country) {
+      // Normalizar o nome do país para comparação
+      const normalizedCountry = country.toLowerCase().trim();
+      
+      // Verificar se está na lista fixa
+      const isInList = paisesComDoacoes.some(pais => {
+        const normalizedPais = pais.toLowerCase().trim();
+        return normalizedPais === normalizedCountry;
+      });
+      
+      // Se não encontrou, tentar mapeamento de nomes (inglês/português)
+      if (!isInList) {
+        const mappedCountry = countryNameMap[normalizedCountry];
+        if (mappedCountry) {
+          return paisesComDoacoes.some(pais => {
+            const normalizedPais = pais.toLowerCase().trim();
+            return normalizedPais === mappedCountry.toLowerCase().trim();
+          });
+        }
+      }
+      
+      console.log(`Verificando país "${country}" (normalizado: "${normalizedCountry}") na lista:`, isInList);
+      return isInList;
+    }
+    
+    // Função para lidar com clique em um pin (marcador) da central
+    async function handlePinClick(central) {
+      console.log('Pin clicado:', central);
+      
+      try {
+        // 1. Mostrar informações da central
+        showCentralInfo(central);
+        
+        // 2. Marcar filtros correspondentes
+        await setCentralFilters(central);
+        
+        // 3. Aplicar filtros automaticamente
+        await applyFilters();
+        
+        // 4. Mostrar seta para rolar até a lista
+        showScrollArrow();
+        
+      } catch (error) {
+        console.error('Erro ao processar clique do pin:', error);
+      }
+    }
+    
+    // Função para mostrar informações da central
+    function showCentralInfo(central) {
+      console.log('Mostrando informações da central:', central);
+      
+      // Criar ou atualizar elemento de informação da central
+      let centralInfoElement = document.getElementById('centralInfo');
+      if (!centralInfoElement) {
+        centralInfoElement = document.createElement('div');
+        centralInfoElement.id = 'centralInfo';
+        centralInfoElement.className = 'central-info-card';
+        document.body.appendChild(centralInfoElement);
+      }
+      
+      centralInfoElement.innerHTML = `
+        <div class="central-info-header">
+          <h3>Central Selecionada</h3>
+          <button onclick="closeCentralInfo()" class="close-central-info">×</button>
+        </div>
+        <div class="central-info-content">
+          <p><strong>Central:</strong> ${central.central || 'N/A'}</p>
+          <p><strong>País:</strong> ${central.pais_entidade || 'N/A'}</p>
+        </div>
+      `;
+      
+      centralInfoElement.style.display = 'block';
+      
+      // Auto-hide após 5 segundos
+      setTimeout(() => {
+        closeCentralInfo();
+      }, 5000);
+    }
+    
+    // Função para fechar informações da central
+    function closeCentralInfo() {
+      const centralInfoElement = document.getElementById('centralInfo');
+      if (centralInfoElement) {
+        centralInfoElement.style.display = 'none';
+      }
+      hideScrollArrow();
+    }
+    
+    // Função para definir filtros baseados na central
+    async function setCentralFilters(central) {
+      console.log('Definindo filtros para central:', central);
+      
+      // Preencher filtro de central
+      const filterCentral = document.getElementById('filterCentral');
+      if (filterCentral && central.central) {
+        filterCentral.value = central.central;
+      }
+      
+      // Preencher filtro de país
+      const filterPais = document.getElementById('filterPais');
+      if (filterPais && central.pais_entidade) {
+        filterPais.value = central.pais_entidade;
+      }
+      
+      console.log('Filtros definidos:', {
+        central: central.central,
+        pais: central.pais_entidade
+      });
+    }
+    
+    // Função para mostrar seta de rolagem
+    function showScrollArrow() {
+      // Criar ou mostrar seta de rolagem
+      let arrowElement = document.getElementById('scrollArrow');
+      if (!arrowElement) {
+        arrowElement = document.createElement('div');
+        arrowElement.id = 'scrollArrow';
+        arrowElement.className = 'scroll-arrow';
+        arrowElement.innerHTML = `
+          <div class="arrow-content" onclick="scrollToEntitiesList()">
+            <span>Ver Lista de Entidades</span>
+            <div class="arrow-icon">↓</div>
+          </div>
+        `;
+        document.body.appendChild(arrowElement);
+      }
+      
+      arrowElement.style.display = 'block';
+      
+      // Auto-hide após 5 segundos
+      setTimeout(() => {
+        hideScrollArrow();
+      }, 5000);
+    }
+    
+    // Função para esconder seta de rolagem
+    function hideScrollArrow() {
+      const arrowElement = document.getElementById('scrollArrow');
+      if (arrowElement) {
+        arrowElement.style.display = 'none';
+      }
+    }
+    
+    // Função para rolar até a lista de entidades
+    function scrollToEntitiesList() {
+      const entitiesList = document.getElementById('entitiesList');
+      if (entitiesList) {
+        entitiesList.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+        hideScrollArrow();
+      }
+    }
+    
+    // Função para abrir o container do gráfico
+    function openChartContainer() {
+      console.log('Abrindo container do gráfico...');
+      const chartContainer = document.getElementById('chartContainer');
+      if (chartContainer) {
+        chartContainer.style.display = 'flex';
+        // Gerar o gráfico quando abrir
+        showGraficoDoacoes();
+      }
+    }
+    
+    // Função para fechar o container do gráfico
+    function closeChartContainer() {
+      console.log('Fechando container do gráfico...');
+      const chartContainer = document.getElementById('chartContainer');
+      if (chartContainer) {
+        chartContainer.style.display = 'none';
+        // Destruir o gráfico quando fechar
+        destroyChart();
+      }
+    }
+    
+    // Função para inicializar modo gráfico
+    function initChartMode() {
+      console.log('Iniciando modo gráfico...');
+      
+      // Ativar botão
+      document.getElementById('chartBtn').classList.add('active');
+      document.getElementById('donationsBtn').classList.remove('active');
+      document.getElementById('schoolsBtn').classList.remove('active');
+      document.getElementById('infographicsBtn').classList.remove('active');
+      
+      // Ocultar todos os outros containers
+      document.getElementById('sidebarLeft').style.display = 'none';
+      document.getElementById('sidebarRight').style.display = 'none';
+      document.getElementById('map').style.display = 'none';
+      document.getElementById('infographicsContainer').style.display = 'none';
+      
+      // Mostrar container do gráfico como página fixa
+      document.getElementById('chartContainer').style.display = 'block';
+      
+      // Gerar o gráfico
+      showGraficoDoacoes();
+    }
+
+    // Função para lidar com clique em um país
+    async function handleCountryClick(normalizedCountry, originalCountryName) {
+      console.log('País clicado:', normalizedCountry, 'Nome original:', originalCountryName);
+      
+      try {
+        // Obter o nome em português para exibição
+        const displayName = getCountryDisplayName(normalizedCountry);
+        
+        // Atualizar o filtro de país
+        const filterPais = document.getElementById('filterPais');
+        if (filterPais) {
+          filterPais.value = displayName;
+          console.log('Filtro de país atualizado para:', displayName);
+        }
+        
+        // Limpar outros filtros dependentes
+        const filterCentral = document.getElementById('filterCentral');
+        const filterCidade = document.getElementById('filterCidade');
+        if (filterCentral) filterCentral.value = '';
+        if (filterCidade) filterCidade.value = '';
+        
+        // Aplicar filtros automaticamente
+        await applyFilters();
+        
+        // Mostrar mensagem de confirmação
+        showCountrySelectionMessage(displayName);
+        
+        // Centralizar o mapa no país selecionado
+        centerMapOnCountry(normalizedCountry);
+        
+        console.log('País selecionado com sucesso:', displayName);
+      } catch (error) {
+        console.error('Erro ao processar clique no país:', error);
+        showCountrySelectionMessage('Erro ao processar seleção');
+      }
+    }
+    
+    // Função para mostrar mensagem de seleção de país
+    function showCountrySelectionMessage(countryName) {
+      // Criar ou atualizar mensagem de confirmação
+      let messageEl = document.getElementById('countrySelectionMessage');
+      if (!messageEl) {
+        messageEl = document.createElement('div');
+        messageEl.id = 'countrySelectionMessage';
+        messageEl.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #003057;
+          color: white;
+          padding: 15px 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          z-index: 10000;
+          font-size: 14px;
+          font-weight: 500;
+          max-width: 300px;
+        `;
+        document.body.appendChild(messageEl);
+      }
+      
+      messageEl.textContent = `País selecionado: ${countryName}`;
+      messageEl.style.display = 'block';
+      
+      // Ocultar mensagem após 3 segundos
+      setTimeout(() => {
+        messageEl.style.display = 'none';
+      }, 3000);
+    }
+    
+    // Função para centralizar o mapa no país selecionado
+    function centerMapOnCountry(countryCode) {
+      const countryCoordinates = {
+        'brazil': [-15, -55],
+        'argentina': [-35, -65],
+        'chile': [-30, -70],
+        'bolivia': [-17, -65],
+        'italy': [42, 12],
+        'portugal': [39, -8],
+        'uruguay': [-33, -56],
+        'spain': [40, -4],
+        'poland': [52, 20],
+        'angola': [-12, 17],
+        'romania': [46, 25],
+        'ethiopia': [9, 40]
+      };
+      
+      const coords = countryCoordinates[countryCode];
+      if (coords) {
+        map.flyTo(coords, 5, {
+          duration: 1.5,
+          easeLinearity: 0.25
+        });
+      }
+    }
+
+    // Dicionário de nomes para exibição em português (primeira letra maiúscula)
+      const countryDisplayName = {
+        'United States of America': 'Estados Unidos',
+        'united states of america': 'Estados Unidos',
+        'United States': 'Estados Unidos',
+        'italy': 'Itália',
+        'Italy': 'Itália',
+        'italia': 'Itália',
+        'Argentina': 'Argentina',
+        'Bolivia': 'Bolívia',
+        'Chile': 'Chile',
+        'Portugal': 'Portugal',
+        'Uruguai': 'Uruguai',
+        'Uruguay': 'Uruguai',
+        'Espanha': 'Espanha',
+        'spain': 'Espanha',
+        'poland': 'Polonia',
+        'angola': 'Angola',
+        'romania': 'Romania',
+        'ethiopia': 'Ethiopia',
+        'brazil': 'Brasil',
+      // Adicione outros países conforme necessário
+    };
+
+    function getCountryDisplayName(normName) {
+      return countryDisplayName[normName] || (normName.charAt(0).toUpperCase() + normName.slice(1));
+    }
+
+    // Função para buscar e exibir o gráfico evolutivo somando todas as centrais
+    async function showGraficoDoacoes() {
+      try {
+        console.log('Iniciando busca de dados para o gráfico evolutivo...');
+        
+        // Buscar dados da tabela zi_vw_dados_infografico_v2 com data de doação
+      const { data, error } = await _supabase
+          .from('zi_vw_dados_infografico_v2')
+          .select('data_doacao, central, pais_entidade')
+          .order('data_doacao', { ascending: true });
+        
+        // Buscar dados de inauguração para marcar no gráfico
+        const { data: inauguracoes, error: errorInaug } = await _supabase
+          .from('vw_dados_central')
+          .select('ano_inauguracao, central')
+          .order('ano_inauguracao', { ascending: true });
+        
+        if (errorInaug) {
+          console.log('Erro ao buscar inaugurações (não crítico):', errorInaug);
+        }
+        
+      if (error) {
+          console.error('Erro ao buscar dados para o gráfico:', error);
+        alert('Erro ao buscar dados para o gráfico');
+        return;
+      }
+        
+        if (!data || data.length === 0) {
+          console.log('Nenhum dado encontrado para o gráfico');
+          alert('Nenhum dado encontrado para gerar o gráfico');
+          return;
+        }
+        
+        console.log('Dados recebidos para o gráfico:', data);
+        
+        // Processar dados para o gráfico - agrupar por ano e somar doações
+        const doacoesPorAno = {};
+        const centraisPorAno = {};
+        
+      data.forEach(row => {
+        if (row.data_doacao) {
+            // Extrair ano da data (formato dd/mm/yyyy)
+            const partes = row.data_doacao.split('/');
+            if (partes.length === 3) {
+              const ano = parseInt(partes[2]);
+              if (!isNaN(ano) && ano >= 1900 && ano <= 2100) { // Validação de ano
+                // Somar quantidade de doações por ano (cada linha = 1 doação)
+                doacoesPorAno[ano] = (doacoesPorAno[ano] || 0) + 1;
+                
+                // Armazenar centrais únicas por ano
+                if (!centraisPorAno[ano]) {
+                  centraisPorAno[ano] = new Set();
+                }
+                if (row.central) {
+                  centraisPorAno[ano].add(row.central);
+                }
+              }
+            }
+          }
+        });
+        
+        console.log('Doações por ano processadas:', doacoesPorAno);
+        
+        // Ordenar anos e criar arrays para o gráfico
+        const anos = Object.keys(doacoesPorAno).map(Number).sort((a, b) => a - b);
+        
+        // Calcular valores acumulativos (soma de TODAS as doações até aquele ano)
+        let totalAcumulado = 0;
+        const quantidadesAcumuladas = anos.map(ano => {
+          const doacoesDoAno = doacoesPorAno[ano] || 0;
+          totalAcumulado += doacoesDoAno;
+          console.log(`Ano ${ano}: ${doacoesDoAno} doações, Total Acumulado: ${totalAcumulado}`);
+          return totalAcumulado;
+        });
+        
+        const centrais = anos.map(ano => Array.from(centraisPorAno[ano]).join(', '));
+        
+                console.log('Dados processados:', { anos, quantidadesAcumuladas, centrais });
+        
+        // Processar dados de inauguração para anotações
+        const inauguracoesPorAno = {};
+        if (inauguracoes && !errorInaug) {
+          inauguracoes.forEach(row => {
+            if (row.ano_inauguracao) {
+              if (!inauguracoesPorAno[row.ano_inauguracao]) {
+                inauguracoesPorAno[row.ano_inauguracao] = [];
+              }
+              inauguracoesPorAno[row.ano_inauguracao].push(row.central);
+            }
+          });
+        }
+        
+        console.log('Inaugurações por ano:', inauguracoesPorAno);
+
+      // Exibir gráfico no modal
+      document.getElementById('chartModal').style.display = 'flex';
+        
+        // Destruir gráfico anterior se existir
+        destroyChart();
+        
+      const ctx = document.getElementById('donationsChart').getContext('2d');
+        
+                // Verificar se Chart.js está disponível
+        if (typeof Chart === 'undefined') {
+          throw new Error('Chart.js não está carregado');
+        }
+        
+        // Criar novo gráfico com Chart.js v4
+        try {
+      window.donationsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+              labels: anos,
+          datasets: [{
+                label: 'Total Acumulado de Doações',
+                data: quantidadesAcumuladas,
+            borderColor: "#003057",
+            backgroundColor: 'rgba(0,48,87,0.1)',
+            borderWidth: 3,
+            fill: true,
+                tension: 0.4,
+                pointBackgroundColor: "#003057",
+                pointBorderColor: "#ffffff",
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+              maintainAspectRatio: false,
+          plugins: {
+                legend: { 
+                  display: true,
+                  position: 'top',
+                  labels: {
+                    font: { size: 14, weight: 'bold' },
+                    color: "#003057"
+                  }
+                },
+                annotation: {
+                  annotations: Object.keys(inauguracoesPorAno).map(ano => {
+                    const anoIndex = anos.indexOf(parseInt(ano));
+                    if (anoIndex !== -1) {
+                      return {
+                        type: 'point',
+                        xValue: anoIndex,
+                        yValue: quantidadesAcumuladas[anoIndex],
+                        backgroundColor: '#FFD700',
+                        borderColor: '#FFA500',
+                        borderWidth: 3,
+                        radius: 8,
+                        label: {
+                          content: `🏗️ Inauguração\n${inauguracoesPorAno[ano].join(', ')}`,
+                          position: 'top',
+                          backgroundColor: 'rgba(255, 215, 0, 0.9)',
+                          color: '#000',
+                          font: { size: 11, weight: 'bold' },
+                          padding: 8,
+                          borderRadius: 6,
+                          display: true
+                        }
+                      };
+                    }
+                    return null;
+                  }).filter(Boolean)
+                },
+            title: {
+              display: true,
+                  text: 'Evolução Acumulativa das Doações por Ano',
+              font: { size: 18, weight: 'bold' },
+                  color: "#003057",
+                  padding: 20
+                },
+                tooltip: {
+                  callbacks: {
+                    title: function(context) {
+                      const index = context[0].dataIndex;
+                      return `Ano: ${anos[index]}`;
+                    },
+                    label: function(context) {
+                      const index = context.dataIndex;
+                      const doacoesAno = doacoesPorAno[anos[index]] || 0;
+                      return [
+                        `Total Acumulado: ${context.parsed.y.toLocaleString()}`,
+                        `Doações no Ano: ${doacoesAno.toLocaleString()}`
+                      ];
+                    }
+                  },
+                  backgroundColor: 'rgba(0,48,87,0.9)',
+                  titleColor: '#ffffff',
+                  bodyColor: '#ffffff',
+                  borderColor: '#003057',
+                  borderWidth: 2,
+                  cornerRadius: 8,
+                  displayColors: false
+            }
+          },
+          scales: {
+                x: { 
+                  title: { 
+                    display: true, 
+                    text: 'Ano das Doações', 
+                    font: { size: 14, weight: 'bold' },
+                    color: "#003057"
+                  },
+                  grid: {
+                    color: 'rgba(0,48,87,0.1)'
+                  },
+                  ticks: {
+                    color: "#003057",
+                    font: { size: 12 }
+                  }
+                },
+                y: { 
+                  title: { 
+                    display: true, 
+                    text: 'Total Acumulado de Doações', 
+                    font: { size: 14, weight: 'bold' },
+                    color: "#003057"
+                  },
+                  beginAtZero: true,
+                  grid: {
+                    color: 'rgba(0,48,87,0.1)'
+                  },
+                  ticks: {
+                    color: "#003057",
+                    font: { size: 12 },
+                    callback: function(value) {
+                      return value.toLocaleString();
+                    }
+                  }
+                }
+              },
+              interaction: {
+                intersect: false,
+                mode: 'index'
+              },
+              elements: {
+                point: {
+                  hoverBackgroundColor: "#00509e"
+                }
+          }
+        }
+      });
+          
+          console.log('Gráfico gerado com sucesso!');
+          
+        } catch (chartError) {
+          console.error('Erro ao criar gráfico:', chartError);
+          alert('Erro ao criar o gráfico. Verifique o console para mais detalhes.');
+        }
+      } catch (error) {
+        console.error('Erro ao gerar gráfico:', error);
+        alert('Erro ao gerar o gráfico. Verifique o console para mais detalhes.');
+      }
+    }
+
+    // Associar evento ao botão 'Ver Gráfico'
+    document.getElementById('showChartBtn').onclick = showGraficoDoacoes;
+
+    // Função para resetar visão das escolas
+    function resetSchoolView() {
+      document.getElementById('totalEscolas').textContent = schoolsData.escolas.length;
+      Array.from(document.getElementsByClassName('school-list-item'))
+        .forEach(el => el.classList.remove('selected'));
+      document.getElementById('selectedSchoolInfo').innerHTML = 'Selecione uma escola para ver os detalhes.';
+      map.flyTo([-15, -55], 4);
+    }
+
+    /* =========================================================================
+       FUNÇÕES DOS FILTROS
+    ========================================================================= */
+    
+    // Estado dos filtros
+    let currentFilters = {
+      central: '',
+      cidade: '',
+      pais: '',
+      ano: ''
+    };
+
+    // Função para carregar dados dos filtros
+    async function loadFilterData() {
+      try {
+        console.log('Iniciando loadFilterData...');
+        
+        // Primeiro, vamos testar se a view existe e tem dados
+        console.log('Testando consulta simples na view...');
+        const { data: testData, error: testError } = await _supabase
+          .from('zi_vw_dados_infografico_v2')
+          .select('*')
+          .limit(5);
+        
+        console.log('Teste de consulta na view:', { testData, testError });
+        
+        if (testError) {
+          console.error('Erro no teste de consulta na view:', testError);
+          console.log('Detalhes do erro:', {
+            message: testError.message,
+            details: testError.details,
+            hint: testError.hint,
+            code: testError.code
+          });
+          return;
+        }
+        
+        if (!testData || testData.length === 0) {
+          console.log('View acessível mas sem dados de teste');
+          return;
+        }
+        
+        console.log('View tem dados! Primeiro registro:', testData[0]);
+        console.log('Colunas disponíveis:', Object.keys(testData[0]));
+        
+        // Verificar se as colunas necessárias existem
+        console.log('Verificando se as colunas necessárias existem na view...');
+        const colunasNecessarias = ['central', 'cidade_entidade', 'pais_entidade', 'data_doacao'];
+        const colunasDisponiveis = Object.keys(testData[0]);
+        
+        console.log('Colunas necessárias:', colunasNecessarias);
+        console.log('Colunas disponíveis na view:', colunasDisponiveis);
+        
+        const colunasFaltando = colunasNecessarias.filter(col => !colunasDisponiveis.includes(col));
+        if (colunasFaltando.length > 0) {
+          console.error('Colunas faltando na view:', colunasFaltando);
+          console.log('Tentando usar colunas disponíveis...');
+        }
+        
+        // BUSCAR PAÍSES DA VIEW v_pais_entidade
+        console.log('=== BUSCANDO PAÍSES DA VIEW v_pais_entidade ===');
+        
+        const { data: paisesData, error: paisesError } = await _supabase
+          .from('v_pais_entidade')
+          .select('*');
+        
+        console.log('Dados da view v_pais_entidade:', paisesData);
+        console.log('Erro na consulta v_pais_entidade:', paisesError);
+        console.log('Total de países na view:', paisesData ? paisesData.length : 0);
+        
+        if (paisesData && paisesData.length > 0) {
+          // Extrair nomes dos países
+          const paisesNomes = paisesData.map(item => item.pais_entidade || item.nome || item.pais).filter(Boolean).sort();
+          console.log('Países encontrados na view:', paisesNomes);
+          console.log('Total de países:', paisesNomes.length);
+          
+          // Log detalhado de cada país
+          paisesNomes.forEach((pais, index) => {
+            console.log(`País ${index + 1}: "${pais}"`);
+          });
+          
+          // Usar estes países para o filtro
+          console.log('Usando países da view v_pais_entidade para preencher o filtro...');
+          populateFilterSelect('filterPais', paisesNomes);
+          
+          // Armazenar os países para usar no mapa
+          window.paisesParaMapa = paisesNomes;
+          
+          // Recarregar o mapa para pintar os países corretos
+          console.log('Recarregando mapa com países da view...');
+          loadCountryLayer("donations");
+        } else {
+          console.log('PROBLEMA: Nenhum dado retornado da view v_pais_entidade!');
+        }
+        
+        // BUSCAR CENTRAIS DA TABELA v_central
+        console.log('=== BUSCANDO CENTRAIS DA TABELA v_central ===');
+        
+        const { data: centraisData, error: centraisError } = await _supabase
+          .from('v_central')
+          .select('central');
+        
+        console.log('Dados da tabela v_central:', centraisData);
+        console.log('Erro na consulta v_central:', centraisError);
+        console.log('Total de centrais na tabela:', centraisData ? centraisData.length : 0);
+        
+        if (centraisData && centraisData.length > 0) {
+          const centraisNomes = centraisData.map(item => item.central).filter(Boolean).sort();
+          console.log('Centrais encontradas na tabela:', centraisNomes);
+          console.log('Total de centrais:', centraisNomes.length);
+          
+          // Usar estas centrais para o filtro
+          console.log('Usando centrais da tabela v_central para preencher o filtro...');
+          populateFilterSelect('filterCentral', centraisNomes);
+        } else {
+          console.log('PROBLEMA: Nenhum dado retornado da tabela v_central!');
+        }
+        
+        // Buscar dados únicos para os outros filtros (cidades e anos)
+        const { data, error } = await _supabase
+          .from('zi_vw_dados_infografico_v2')
+          .select('cidade_entidade, data_doacao');
+        
+        console.log('Resposta do Supabase para outros filtros:', { data, error });
+        console.log('Total de registros retornados:', data ? data.length : 0);
+        
+        if (error) {
+          console.error('Erro ao carregar dados dos outros filtros:', error);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          console.log('Nenhum dado retornado do Supabase para outros filtros');
+          return;
+        }
+
+        console.log('Dados recebidos para outros filtros:', data.length, 'registros');
+
+        // Extrair valores únicos para cidades e anos
+        const cidades = [...new Set(data.map(item => item.cidade_entidade).filter(Boolean))].sort();
+        const anos = [...new Set(data.map(item => {
+          if (item.data_doacao) {
+            const partes = item.data_doacao.split('/');
+            return partes.length === 3 ? partes[2] : null;
+          }
+          return null;
+        }).filter(Boolean))].sort((a, b) => b - a); // Ordenar anos decrescente
+
+        console.log('Valores extraídos dos outros filtros:', { cidades, anos });
+
+        // Preencher selects (centrais e países já foram preenchidos acima)
+        populateFilterSelect('filterCidade', cidades);
+        populateFilterSelect('filterAno', anos);
+
+        console.log('Filtros preenchidos com sucesso');
+
+      } catch (error) {
+        console.error('Erro ao carregar dados dos filtros:', error);
+      }
+    }
+
+    // Função para preencher um select de filtro
+    function populateFilterSelect(selectId, options) {
+      const select = document.getElementById(selectId);
+      if (!select) {
+        console.error(`Select ${selectId} não encontrado`);
+        return;
+      }
+
+      console.log(`Preenchendo select ${selectId} com ${options.length} opções:`, options);
+
+      // Verificar se há opções válidas
+      if (!options || options.length === 0) {
+        console.log(`Nenhuma opção válida para ${selectId}`);
+        return;
+      }
+
+      // Manter a primeira opção (padrão)
+      const defaultOption = select.options[0];
+      if (!defaultOption) {
+        console.error(`Opção padrão não encontrada para ${selectId}`);
+        return;
+      }
+
+      // Limpar e recriar o select
+      select.innerHTML = '';
+      select.appendChild(defaultOption);
+
+      // Adicionar novas opções
+      options.forEach(option => {
+        if (option && option.trim() !== '') {
+        const optionElement = document.createElement('option');
+        optionElement.value = option;
+        optionElement.textContent = option;
+        select.appendChild(optionElement);
+        }
+      });
+
+      console.log(`Select ${selectId} preenchido com sucesso. Total de opções: ${select.options.length}`);
+    }
+
+    // Função para aplicar filtros
+    async function applyFilters() {
+      const central = document.getElementById('filterCentral').value;
+      const cidade = document.getElementById('filterCidade').value;
+      const pais = document.getElementById('filterPais').value;
+      const ano = document.getElementById('filterAno').value;
+
+      currentFilters = { central, cidade, pais, ano };
+
+      // Construir query com filtros
+      let query = _supabase
+        .from('zi_vw_dados_infografico_v2')
+        .select('nome_entidade, tipo_atend_entidade, central, cidade_entidade, pais_entidade, data_doacao', { count: 'exact' });
+
+      if (central) {
+        query = query.eq('central', central);
+      }
+      if (cidade) {
+        query = query.eq('cidade_entidade', cidade);
+      }
+      if (pais) {
+        query = query.eq('pais_entidade', pais);
+      }
+      if (ano) {
+        query = query.like('data_doacao', `%/${ano}`);
+      }
+
+      try {
+        const { data, error, count } = await query;
+        
+        if (error) {
+          console.error('Erro ao aplicar filtros:', error);
+          return;
+        }
+
+        // Atualizar lista de entidades
+        updateEntitiesListWithFilters(data);
+        
+        // Atualizar total de doações
+        document.getElementById('totalDoacoes').innerText = count || 0;
+
+        // Mostrar mensagem de resultado
+        showFilterResultMessage(count);
+
+      } catch (error) {
+        console.error('Erro ao aplicar filtros:', error);
+      }
+    }
+
+    // Função para atualizar lista de entidades com filtros
+    function updateEntitiesListWithFilters(data) {
+      const listEl = document.getElementById('entitiesList');
+      listEl.innerHTML = '';
+
+      if (data.length === 0) {
+        listEl.innerHTML = '<div class="entity-item">Nenhuma entidade encontrada com os filtros aplicados.</div>';
+        return;
+      }
+
+      data.forEach(ent => {
+        const div = document.createElement('div');
+        div.className = 'entity-item';
+        div.innerHTML = `
+          <div>${ent.nome_entidade}</div>
+          <div style="font-size:0.92em;color:#555;margin-top:2px;">
+            ${ent.central || 'N/A'} | ${ent.tipo_atend_entidade} | ${ent.cidade_entidade || 'N/A'} | ${ent.data_doacao || 'N/A'}
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+    }
+
+    // Função para mostrar mensagem de resultado dos filtros
+    function showFilterResultMessage(count) {
+      const filtersSection = document.querySelector('.filters-section');
+      let resultMessage = filtersSection.querySelector('.filter-result-message');
+      
+      if (!resultMessage) {
+        resultMessage = document.createElement('div');
+        resultMessage.className = 'filter-result-message';
+        filtersSection.appendChild(resultMessage);
+      }
+
+      const activeFilters = Object.values(currentFilters).filter(f => f).length;
+      
+      if (activeFilters > 0) {
+        resultMessage.innerHTML = `
+          <div style="background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 6px; padding: 8px 12px; margin-top: 12px; font-size: 0.9rem; color: #0c5460;">
+            <i class="fas fa-info-circle"></i> 
+            ${count} entidade(s) encontrada(s) com ${activeFilters} filtro(s) ativo(s)
+          </div>
+        `;
+      } else {
+        resultMessage.innerHTML = '';
+      }
+    }
+
+    // Função para limpar filtros
+    function clearFilters() {
+      document.getElementById('filterCentral').value = '';
+      document.getElementById('filterCidade').value = '';
+      document.getElementById('filterPais').value = '';
+      document.getElementById('filterAno').value = '';
+      
+      currentFilters = { central: '', cidade: '', pais: '', ano: '' };
+      
+      // Resetar lista de entidades
+      document.getElementById('entitiesList').innerHTML = '<div class="entity-item">Selecione filtros para ver as entidades atendidas.</div>';
+      document.getElementById('totalDoacoes').innerText = '0';
+      
+      // Remover mensagem de resultado
+      const resultMessage = document.querySelector('.filter-result-message');
+      if (resultMessage) {
+        resultMessage.remove();
+      }
+      
+      // Recarregar todos os filtros com dados completos
+      loadFilterData();
+    }
+
+    // Função para atualizar filtros dependentes
+    async function updateDependentFilters() {
+      const central = document.getElementById('filterCentral').value;
+      const cidade = document.getElementById('filterCidade').value;
+      const pais = document.getElementById('filterPais').value;
+      const ano = document.getElementById('filterAno').value;
+
+      try {
+        // Buscar dados baseados nos filtros já selecionados
+        let query = _supabase
+          .from('zi_vw_dados_infografico_v2')
+          .select('central, cidade_entidade, pais_entidade, data_doacao');
+
+        // Aplicar filtros já selecionados
+        if (central) {
+          query = query.eq('central', central);
+        }
+        if (cidade) {
+          query = query.eq('cidade_entidade', cidade);
+        }
+        if (pais) {
+          query = query.eq('pais_entidade', pais);
+        }
+
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error('Erro ao atualizar filtros dependentes:', error);
+          return;
+        }
+
+        // Extrair valores únicos baseados nos dados filtrados
+        const centrais = [...new Set(data.map(item => item.central).filter(Boolean))].sort();
+        const cidades = [...new Set(data.map(item => item.cidade_entidade).filter(Boolean))].sort();
+        const anos = [...new Set(data.map(item => {
+          if (item.data_doacao) {
+            const partes = item.data_doacao.split('/');
+            return partes.length === 3 ? partes[2] : null;
+          }
+          return null;
+        }).filter(Boolean))].sort((a, b) => b - a);
+
+        // Para países, usar os países da view v_pais_entidade (já carregados)
+        // MAS só atualizar se nenhum país estiver selecionado
+        console.log('Verificando se deve atualizar filtro de países...');
+        const paisSelecionado = document.getElementById('filterPais').value;
+        console.log('País atualmente selecionado:', paisSelecionado);
+        
+        if (!paisSelecionado) {
+          console.log('Nenhum país selecionado, atualizando lista...');
+          if (window.paisesParaMapa && Array.isArray(window.paisesParaMapa)) {
+            console.log('Países disponíveis da view:', window.paisesParaMapa);
+            populateFilterSelect('filterPais', window.paisesParaMapa);
+          } else {
+            console.log('Países da view não carregados ainda, recarregando...');
+            // Se não estiver carregado, recarregar
+            loadFilterData();
+          }
+        } else {
+          console.log('País já selecionado, mantendo seleção:', paisSelecionado);
+        }
+
+        // Atualizar filtros dependentes (apenas os que não estão selecionados)
+        if (!central) {
+          populateFilterSelect('filterCentral', centrais);
+        }
+        if (!cidade) {
+          populateFilterSelect('filterCidade', cidades);
+        }
+        if (!ano) {
+          populateFilterSelect('filterAno', anos);
+        }
+
+        // Se algum filtro foi limpo, recarregar os filtros dependentes
+        if (!central && !cidade && !pais && !ano) {
+          loadFilterData();
+        }
+
+      } catch (error) {
+        console.error('Erro ao atualizar filtros dependentes:', error);
+      }
+    }
+
+    // Event listeners para os filtros
+    document.addEventListener('DOMContentLoaded', function() {
+      // Aplicar filtros
+      const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+      if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', applyFilters);
+      }
+
+      // Limpar filtros
+      const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+      if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', clearFilters);
+      }
+
+      // Event listeners para filtros dependentes (sem aplicar filtros automaticamente)
+
+      // Event listeners para filtros dependentes
+      const filterCentral = document.getElementById('filterCentral');
+      if (filterCentral) {
+        filterCentral.addEventListener('change', function() {
+          // Limpar filtros dependentes quando central mudar
+          document.getElementById('filterCidade').value = '';
+          document.getElementById('filterPais').value = '';
+          document.getElementById('filterAno').value = '';
+          updateDependentFilters();
+        });
+      }
+      
+      const filterCidade = document.getElementById('filterCidade');
+      if (filterCidade) {
+        filterCidade.addEventListener('change', function() {
+          // Limpar filtros dependentes quando cidade mudar
+          document.getElementById('filterPais').value = '';
+          document.getElementById('filterAno').value = '';
+          updateDependentFilters();
+        });
+      }
+      
+      const filterPais = document.getElementById('filterPais');
+      if (filterPais) {
+        filterPais.addEventListener('change', function() {
+          // Limpar filtros dependentes quando país mudar
+          document.getElementById('filterAno').value = '';
+          updateDependentFilters();
+        });
+      }
+      
+      const filterAno = document.getElementById('filterAno');
+      if (filterAno) {
+        filterAno.addEventListener('change', function() {
+          updateDependentFilters();
+        });
+      }
+
+      // Fechar card de detalhes da escola
+      const closeSchoolCardBtn = document.getElementById('closeSchoolCard');
+      
+      if (closeSchoolCardBtn) {
+        closeSchoolCardBtn.addEventListener('click', function() {
+          closeSchoolCard();
+        });
+      }
+
+      // Fechar card com tecla ESC
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeSchoolCard();
+        }
+      });
+
+      // Botão Como Navegar
+      const howToNavigateBtn = document.getElementById('howToNavigateBtn');
+      if (howToNavigateBtn) {
+        howToNavigateBtn.addEventListener('click', showNavigationHelp);
+      }
+
+      // Botão Fechar Instruções
+      const closeInstructionsBtn = document.getElementById('closeInstructionsBtn');
+      if (closeInstructionsBtn) {
+        closeInstructionsBtn.addEventListener('click', closeNavigationHelp);
+      }
+
+      // Fechar modal clicando fora
+      const instructionsModal = document.getElementById('instructionsModal');
+      if (instructionsModal) {
+        instructionsModal.addEventListener('click', function(e) {
+          if (e.target === instructionsModal) {
+            closeNavigationHelp();
+          }
+        });
+      }
+
+      // Fechar modal com ESC
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeNavigationHelp();
+        }
+      });
+    });
+
+    // Função para mostrar ajuda de navegação
+    function showNavigationHelp() {
+      document.getElementById('instructionsModal').classList.add('show');
+    }
+
+    // Função para fechar ajuda de navegação
+    function closeNavigationHelp() {
+      document.getElementById('instructionsModal').classList.remove('show');
+    }
+
+    // Função para fechar card
+    function closeSchoolCard() {
+      document.getElementById('schoolDetailsCard').classList.remove('show');
+      
+      // Voltar ao zoom inicial do mapa
+      map.flyTo([-15, -55], 4);
+    }
+
+    // Dados das escolas
+    const schoolsData = {
+      escolas: [
+        {
+          nome: "RAFARD",
+          ano_inauguracao: 1998,
+          qtd_por_ano: 1200,
+          endereco: "Rafard /SP",
+          lat: -23.010500,
+          lng: -47.531800,
+          imagem: "rafard.jpg"
+        },
+        {
+          nome: "RIBEIRÃO PRETO",
+          ano_inauguracao: 2000,
+          qtd_por_ano: 900,
+          endereco: "Ribeirão Preto /SP",
+          lat: -21.142180,
+          lng: -47.851380,
+          imagem: "ribeirao-preto.jpg"
+        },
+        {
+          nome: "CUIABÁ",
+          ano_inauguracao: 2001,
+          qtd_por_ano: 2000,
+          endereco: "Cuiabá /MT",
+          lat: -15.601000,
+          lng: -56.097400,
+          imagem: "cuiaba.jpg"
+        },
+        {
+          nome: "PARÁ DE MINAS",
+          ano_inauguracao: 2003,
+          qtd_por_ano: 430,
+          endereco: "Pará de Minas /MG",
+          lat: -19.853400,
+          lng: -44.611400,
+          imagem: "para-de-minas.jpg"
+        },
+        {
+          nome: "CAPÃO BONITO",
+          ano_inauguracao: 2005,
+          qtd_por_ano: 1300,
+          endereco: "Capão Bonito /SP",
+          lat: -24.028580,
+          lng: -48.356580,
+          imagem: "capao-bonito.jpg"
+        },
+        {
+          nome: "SUMARÉ",
+          ano_inauguracao: 2007,
+          qtd_por_ano: 1800,
+          endereco: "Sumaré /SP",
+          lat: -22.820400,
+          lng: -47.272800,
+          imagem: "sumare.jpg"
+        },
+        {
+          nome: "BACCARELLI",
+          ano_inauguracao: 2008,
+          qtd_por_ano: 240,
+          endereco: "São Paulo /SP (Heliópolis)",
+          lat: -23.618478,
+          lng: -46.592606,
+          imagem: "baccarelli.jpg"
+        },
+        {
+          nome: "GOIÂNIA",
+          ano_inauguracao: 2011,
+          qtd_por_ano: 1000,
+          endereco: "Aparecida de Goiânia /GO",
+          lat: -16.819800,
+          lng: -49.246900,
+          imagem: "goiania.jpg"
+        },
+        {
+          nome: "CAMPO GRANDE",
+          ano_inauguracao: 2013,
+          qtd_por_ano: 7000,
+          endereco: "Campo Grande /MS",
+          lat: -20.448600,
+          lng: -54.629500,
+          imagem: "campo-grande.jpg"
+        },
+        {
+          nome: "UBERLÂNDIA",
+          ano_inauguracao: 2014,
+          qtd_por_ano: 2000,
+          endereco: "Uberlândia /MG",
+          lat: -18.914100,
+          lng: -48.274900,
+          imagem: "uberlandia.jpg"
+        },
+        {
+          nome: "GUARULHOS",
+          ano_inauguracao: 2015,
+          qtd_por_ano: 20000,
+          endereco: "Guarulhos /SP",
+          lat: -23.435010,
+          lng: -46.433224,
+          imagem: "guarulhus.jpg"
+        },
+        {
+          nome: "PINDA",
+          ano_inauguracao: 2017,
+          qtd_por_ano: 8000,
+          endereco: "Pindamonhangaba /SP",
+          lat: -22.924600,
+          lng: -45.461300,
+          imagem: "pinda.jpg"
+        },
+        {
+          nome: "CURITIBA",
+          ano_inauguracao: 2018,
+          qtd_por_ano: 5000,
+          endereco: "Curitiba /PR",
+          lat: -25.420631,
+          lng: -49.281118,
+          imagem: "curitiba.jpg"
+        },
+        {
+          nome: "BOM RETIRO",
+          ano_inauguracao: 2021,
+          qtd_por_ano: 1100,
+          endereco: "São Paulo /SP (Bom Retiro)",
+          lat: -23.522450,
+          lng: -46.646052,
+          imagem: "bom-retiro.jpg"
+        },
+        {
+          nome: "LONDRINA",
+          ano_inauguracao: 2024,
+          qtd_por_ano: 4300,
+          endereco: "Londrina /PR",
+          lat: -23.304000,
+          lng: -51.169100,
+          imagem: "londrina.jpg"
+        }
+      ]
+    };
+
+    // Função para calcular a capacidade de formação
+    function calcularCapacidadeFormacao(anoInauguracao, qtdPorAno) {
+      const anoAtual = new Date().getFullYear();
+      const anosDeFuncionamento = anoAtual - anoInauguracao;
+      return anosDeFuncionamento * qtdPorAno;
+    }
+
+    // Função para inicializar modo doações
+    function initDonationsMode() {
+      // Ativar botão
+      document.getElementById('donationsBtn').classList.add('active');
+      document.getElementById('schoolsBtn').classList.remove('active');
+      document.getElementById('infographicsBtn').classList.remove('active');
+      
+      // Configurar sidebars - mostrar sidebar esquerdo e ocultar direito
+      document.getElementById('sidebarLeft').style.display = '';
+      document.getElementById('sidebarRight').classList.remove('show');
+      document.getElementById('map').style.display = '';
+      document.getElementById('infographicsContainer').style.display = 'none';
+      
+      // Ajustar mapa para modo doações (sem sidebar direito)
+      document.getElementById('map').classList.remove('with-right-sidebar');
+      
+      // Remover classe do body
+      document.body.classList.remove('schools-mode');
+      
+      // Configurar conteúdo dos sidebars
+      document.getElementById('donationsSidebar').style.display = '';
+      document.getElementById('schoolsSidebar').style.display = 'none';
+      document.getElementById('donationsDetails').style.display = 'block';
+      document.getElementById('schoolDetails').style.display = 'none';
+      
+      // Limpar marcadores e camadas anteriores
+      clearMarkers();
+      if (countryLayer) {
+        map.removeLayer(countryLayer);
+        countryLayer = null;
+      }
+      
+      // Carregar dados
+      loadCountryLayer("donations");
+      loadPaisesCentraisMarkers();
+      resetGlobalView();
+      
+      // Carregar dados dos filtros
+      loadFilterData();
+      
+      // Garantir que o mapa está visível e atualizado
+      map.invalidateSize();
+    }
+
+    // Função para inicializar modo escolas
+    function initSchoolsMode() {
+      // Ativar botão
+      document.getElementById('schoolsBtn').classList.add('active');
+      document.getElementById('donationsBtn').classList.remove('active');
+      document.getElementById('infographicsBtn').classList.remove('active');
+      
+      // Configurar sidebars - mostrar sidebar esquerdo e ocultar direito
+      document.getElementById('sidebarLeft').style.display = '';
+      document.getElementById('sidebarRight').style.display = '';
+      document.getElementById('map').style.display = '';
+      document.getElementById('infographicsContainer').style.display = 'none';
+      
+      // Configurar conteúdo dos sidebars
+      document.getElementById('donationsSidebar').style.display = 'none';
+      document.getElementById('schoolsSidebar').style.display = '';
+      document.getElementById('donationsDetails').style.display = 'none';
+      document.getElementById('schoolDetails').style.display = 'block';
+      
+      // Limpar marcadores e camadas anteriores
+      clearMarkers();
+      if (countryLayer) {
+        map.removeLayer(countryLayer);
+        countryLayer = null;
+      }
+      
+      // Carregar dados
+      loadCountryLayer("schools");
+      loadSchoolMarkers();
+      populateSchoolsList();
+      
+      // Ajustar zoom do mapa
+      map.flyTo([-15, -55], 4);
+      
+      // Garantir que o mapa está visível e atualizado
+      map.invalidateSize();
+    }
+
+    // Função para inicializar modo infográficos
+    function initInfographicsMode() {
+      // Ativar botão
+      document.getElementById('infographicsBtn').classList.add('active');
+      document.getElementById('donationsBtn').classList.remove('active');
+      document.getElementById('schoolsBtn').classList.remove('active');
+      
+      // Limpar marcadores e camadas
+      clearMarkers();
+      if (countryLayer) {
+        map.removeLayer(countryLayer);
+        countryLayer = null;
+      }
+      
+      // Mostrar/ocultar seções
+      document.getElementById('sidebarLeft').style.display = 'none';
+      document.getElementById('sidebarRight').style.display = 'none';
+      document.getElementById('map').style.display = 'none';
+      document.getElementById('infographicsContainer').style.display = 'flex';
+    }
+
+    /* =========================================================================
+       8) Infográficos Carrossel
+    ========================================================================= */
+    (function(){
+      const slides = Array.from(document.querySelectorAll('.carousel-slide'));
+      const inds = Array.from(document.querySelectorAll('.indicator'));
+      const prev = document.getElementById('carouselPrev');
+      const next = document.getElementById('carouselNext');
+      let idx = 0;
+      let isAnimating = false;
+
+      function show(i) {
+        if (isAnimating) return;
+        isAnimating = true;
+
+        // Remover classes ativas
+        slides.forEach(s => s.classList.remove('active'));
+        inds.forEach(d => d.classList.remove('active'));
+
+        // Adicionar classes ativas
+        slides[i].classList.add('active');
+        inds[i].classList.add('active');
+
+        // Atualizar índice
+        idx = i;
+
+        // Resetar flag de animação após a transição
+        setTimeout(() => {
+          isAnimating = false;
+        }, 500);
+      }
+
+      // Navegação com botões
+      prev.addEventListener('click', () => {
+        if (!isAnimating) {
+          show((idx - 1 + slides.length) % slides.length);
+        }
+      });
+
+      next.addEventListener('click', () => {
+        if (!isAnimating) {
+          show((idx + 1) % slides.length);
+        }
+      });
+
+      // Navegação com indicadores
+      inds.forEach((d, i) => {
+        d.addEventListener('click', () => {
+          if (!isAnimating) {
+            show(i);
+          }
+        });
+      });
+
+      // Navegação com teclado
+      document.addEventListener('keydown', e => {
+        if (document.getElementById('infographicsContainer').style.display === 'flex') {
+          if (e.key === 'ArrowLeft' && !isAnimating) {
+            prev.click();
+          }
+          if (e.key === 'ArrowRight' && !isAnimating) {
+            next.click();
+          }
+        }
+      });
+
+      
+
+      // Funções de auto-play
+      let autoPlayInterval;
+      
+      function startAutoPlay() {
+        if (autoPlayInterval) clearInterval(autoPlayInterval);
+        autoPlayInterval = setInterval(() => {
+          if (!isAnimating) {
+            show((idx + 1) % slides.length);
+          }
+        }, 5000);
+      }
+      
+      function stopAutoPlay() {
+        if (autoPlayInterval) {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = null;
+        }
+      }
+
+      // Iniciar auto-play quando o container estiver visível
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.target.id === 'infographicsContainer') {
+            if (mutation.target.style.display === 'flex') {
+              startAutoPlay();
+            } else {
+              stopAutoPlay();
+            }
+          }
+        });
+      });
+
+      observer.observe(document.getElementById('infographicsContainer'), {
+        attributes: true,
+        attributeFilter: ['style']
+      });
+    })();
+  </script>
+</body>
+</html>
