@@ -122,12 +122,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 12px 32px;
-      height: 120px;
+      padding: 8px 32px;
+      height: 80px;
     }
 
     .logo-section img {
-      height: 90px;
+      height: 60px;
       width: auto;
       filter: drop-shadow(0 2px 8px rgba(0,0,0,0.10));
     }
@@ -136,7 +136,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 0 32px 16px 32px;
+      padding: 0 32px 8px 32px;
       border-top: none;
       border-bottom: 1px solid #e0e0e0;
     }
@@ -175,9 +175,110 @@
       transform: translateY(-1px);
     }
 
-    .nav-buttons {
+    /* Menu Hambúrguer */
+    .hamburger-menu {
+      position: relative;
+    }
+    
+    .hamburger-btn {
+      background: #B29637;
+      border: none;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--transition);
       display: flex;
-      gap: 16px;
+      flex-direction: column;
+      gap: 4px;
+      width: 50px;
+      height: 50px;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .hamburger-btn:hover {
+      background: #9a7f2f;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.3);
+    }
+    
+    .hamburger-btn span {
+      width: 20px;
+      height: 2px;
+      background: white;
+      transition: all var(--transition);
+      border-radius: 1px;
+    }
+    
+    .hamburger-btn.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    
+    .hamburger-btn.active span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .hamburger-btn.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+    
+    .hamburger-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border: 2px solid #B29637;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      min-width: 200px;
+      z-index: 99999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .hamburger-dropdown.show {
+      display: flex;
+      animation: slideDown 0.3s ease-out;
+    }
+    
+    .hamburger-dropdown button {
+      background: transparent;
+      border: none;
+      color: #B29637;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-weight: 500;
+      text-align: left;
+      border-bottom: 1px solid rgba(178, 150, 55, 0.1);
+    }
+    
+    .hamburger-dropdown button:last-child {
+      border-bottom: none;
+    }
+    
+    .hamburger-dropdown button:hover {
+      background: #B29637;
+      color: white;
+    }
+    
+    .hamburger-dropdown button.active {
+      background: #B29637;
+      color: white;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* MODAL DE INSTRUÇÕES */
@@ -315,39 +416,12 @@
       display: flex;
       gap: 18px;
     }
-    .nav-buttons button {
-      background: #f8f6f2;
-      border: 1.5px solid #B29637;
-      color: #B29637;
-      font-size: 0.95rem;
-      padding: 10px 20px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: normal;
-      transition: all var(--transition);
-      box-shadow: 0 2px 8px rgba(178, 150, 55, 0.1);
-      outline: none;
-      letter-spacing: 0.2px;
-      font-family: var(--font-main);
-    }
-    .nav-buttons button:hover {
-      background: #B29637;
-      color: #f8f6f2;
-      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.2);
-      transform: translateY(-1px);
-    }
-    .nav-buttons button.active {
-      background: #B29637;
-      color: #f8f6f2;
-      border-color: #B29637;
-      box-shadow: 0 2px 12px rgba(178, 150, 55, 0.3);
-    }
     
 
     /* MAPA */
     #map {
       position: absolute;
-      top: 184px;
+      top: 136px;
       left: 0;
       right: 0;
       bottom: 0;
@@ -373,11 +447,11 @@
     /* SIDEBAR ESQUERDO COMO MENU LATERAL */
     .sidebar-left {
       position: fixed;
-      top: 184px;
+      top: 136px;
       left: 0;
       width: 340px;
-      height: calc(100vh - 184px);
-      max-height: calc(100vh - 184px);
+      height: calc(100vh - 136px);
+      max-height: calc(100vh - 136px);
       border-radius: 0;
       border-left: none;
       border-top: none;
@@ -431,10 +505,10 @@
     /* CARD DE DETALHES DA ESCOLA NA DIREITA */
     .school-details-card-right {
       position: fixed;
-      top: 184px;
+      top: 136px;
       right: 0;
       width: 340px;
-      height: calc(100vh - 184px);
+      height: calc(100vh - 136px);
       background: #F7F7F7;
       border-left: 1.5px solid #e0e0e0;
       box-shadow: -4px 0 16px rgba(0,0,0,0.1);
@@ -460,7 +534,7 @@
     /* Ajustar o mapa para ficar ao lado do sidebar */
     #map {
       position: absolute;
-      top: 184px;
+      top: 136px;
       left: 340px;
       right: 0;
       bottom: 0;
@@ -477,6 +551,26 @@
     /* Garantir que o mapa ocupe toda a largura quando sidebar direito estiver oculto */
     #map:not(.with-right-sidebar) {
       right: 0 !important;
+    }
+    
+    /* Ajustar posição do popup do Leaflet para não ser cortado */
+    .leaflet-popup {
+      margin-bottom: 50px !important;
+    }
+    
+    .leaflet-popup-tip-container {
+      bottom: -20px !important;
+    }
+    
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px !important;
+      padding: 10px !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .leaflet-popup-content {
+      margin: 10px !important;
+      line-height: 1.5 !important;
     }
 
     /* Remover qualquer espaço reservado para sidebar direito */
@@ -537,29 +631,6 @@
     }
     .entities-list .entity-item:hover {
       background: #eaeaea;
-    }
-    #showChartBtn {
-      background: #f8f6f2;
-      border: 1.5px solid #B29637;
-      color: #B29637;
-      padding: 13px;
-      width: 100%;
-      border-radius: 25px;
-      font-size: 1.08rem;
-      cursor: pointer;
-      transition: all var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: 0 2px 8px rgba(178, 150, 55, 0.1);
-      font-weight: normal;
-    }
-    #showChartBtn:hover {
-      background: #B29637;
-      color: #f8f6f2;
-      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.2);
-      transform: translateY(-1px);
     }
     /* SIDEBAR DIREITA */
     #centralDetails {
@@ -637,6 +708,10 @@
       z-index: 11000;
       transition: opacity var(--transition);
     }
+    
+    #chartModal[style*="display: flex"] {
+      display: flex !important;
+    }
     #chartModal .modal-content {
       background: var(--white);
       padding: 32px 24px 24px 24px;
@@ -650,6 +725,10 @@
       animation: popIn 0.4s cubic-bezier(.4,0,.2,1);
       display: flex;
       flex-direction: column;
+    }
+    
+    #chartModal .modal-content[style*="display: flex"] {
+      display: flex !important;
     }
     #chartModal .close-modal {
       position: absolute;
@@ -678,6 +757,11 @@
       flex: 1;
       min-height: 500px;
       max-height: 600px;
+      width: 100%;
+    }
+    
+    #chartModal canvas[style*="display: block"] {
+      display: block !important;
     }
     
     /* MODAL DA TABELA */
@@ -759,12 +843,25 @@
     /* INFROGRÁFICOS */
     #infographicsContainer {
       position: absolute;
-      top: 184px; left: 0; right: 0; bottom: 0;
+      top: 136px; left: 0; right: 0; bottom: 0;
       background: #F7F7F7;
       display: none;
-      z-index: 2000;
+      z-index: 1000;
       overflow-y: auto;
       padding: 32px 0;
+    }
+    
+    /* Garantir que o menu hambúrguer esteja sempre acima do container de infográficos */
+    .hamburger-menu {
+      z-index: 99999 !important;
+      position: relative;
+    }
+    
+    .hamburger-dropdown {
+      z-index: 99999 !important;
+    }
+    
+    .carousel-container {
       min-height: 600px;
       transition: opacity var(--transition);
       display: flex;
@@ -1423,8 +1520,8 @@
     /* Estilos para card de informações da central */
     .central-info-card {
       position: fixed;
-      top: 200px;
-      right: 40px;
+      top: 100px;
+      right: 20px;
       background: white;
       border: 2px solid #023047;
       border-radius: 8px;
@@ -1536,18 +1633,203 @@
       height: 100%;
       background: white;
       display: none;
-      z-index: 2000;
-      overflow-y: auto;
+      z-index: 9999;
+    }
+    
+    #chartContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      display: none;
+      z-index: 9999;
+    }
+    
+    #chartContainer[style*="display: flex"] {
+      display: flex !important;
+    }
+    
+    #chartContainer.force-show {
+      display: flex !important;
+    }
+    
+    #chartContainer.visible {
+      display: flex !important;
+    }
+    
+    #chartContainer.active {
+      display: flex !important;
+    }
+    
+    #chartContainer.show {
+      display: flex !important;
+    }
+    
+    #chartContainer.force-show {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    /* CSS específico para garantir exibição do gráfico */
+    #chartContainer[style*="display: flex"] {
+      display: flex !important;
+      visibility: visible !important;
+      z-index: 9999 !important;
+    }
+    
+    #chartContainer.force-show {
+      display: flex !important;
+      visibility: visible !important;
+      z-index: 9999 !important;
+    }
+    
+    #chartContainer.visible {
+      display: flex !important;
+      visibility: visible !important;
+      z-index: 9999 !important;
+    }
+    
+    #chartContainer.active {
+      display: flex !important;
+      visibility: visible !important;
+      z-index: 9999 !important;
+    }
+    
+    #chartContainer.visible {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer.active {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer.show {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer[style*="display: flex"] {
+      display: flex !important;
+    }
+    
+    #chartContainer.force-show {
+      display: flex !important;
+    }
+    
+    #chartContainer.visible {
+      display: flex !important;
+    }
+    
+    #chartContainer.active {
+      display: flex !important;
+    }
+    
+    #chartContainer.show {
+      display: flex !important;
+    }
+    
+    .chart-container[style*="display: flex"] {
+      display: flex !important;
+    }
+    
+    .chart-container.force-show {
+      display: flex !important;
+    }
+    
+    .chart-container.visible {
+      display: flex !important;
+    }
+    
+    .chart-container.active {
+      display: flex !important;
+    }
+    
+    .chart-container.show {
+      display: flex !important;
     }
     
     .chart-content {
       background: white;
       padding: 30px;
       width: 100%;
-      min-height: 100vh;
+      height: 100%;
       display: flex;
       flex-direction: column;
       position: relative;
+    }
+    
+    #chartContainer .chart-content {
+      background: white;
+      padding: 30px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    #chartContainer .chart-content.force-show {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer .chart-content.visible {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer .chart-content.active {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer .chart-content.show {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer .chart-content[style*="display: flex"] {
+      display: flex !important;
+    }
+    
+    #chartContainer .chart-content.force-show {
+      display: flex !important;
+    }
+    
+    #chartContainer .chart-content.visible {
+      display: flex !important;
+    }
+    
+    #chartContainer .chart-content.active {
+      display: flex !important;
+    }
+    
+    #chartContainer .chart-content.show {
+      display: flex !important;
+    }
+    
+    .chart-content[style*="display: flex"] {
+      display: flex !important;
+    }
+    
+    .chart-content.force-show {
+      display: flex !important;
+    }
+    
+    .chart-content.visible {
+      display: flex !important;
+    }
+    
+    .chart-content.active {
+      display: flex !important;
+    }
+    
+    .chart-content.show {
+      display: flex !important;
     }
     
     .chart-content h2 {
@@ -1564,15 +1846,147 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 70vh;
+      min-height: 400px;
       width: 100%;
+      padding: 20px;
+    }
+    
+    #chartContainer .chart-wrapper {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+      width: 100%;
+      padding: 20px;
+    }
+    
+    #chartContainer .chart-wrapper.force-show {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer .chart-wrapper.visible {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer .chart-wrapper.active {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer .chart-wrapper.show {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer .chart-wrapper[style*="display: flex"] {
+      display: flex !important;
+    }
+    
+    #chartContainer .chart-wrapper.force-show {
+      display: flex !important;
+    }
+    
+    #chartContainer .chart-wrapper.visible {
+      display: flex !important;
+    }
+    
+    #chartContainer .chart-wrapper.active {
+      display: flex !important;
+    }
+    
+    #chartContainer .chart-wrapper.show {
+      display: flex !important;
+    }
+    
+    .chart-wrapper[style*="display: flex"] {
+      display: flex !important;
+    }
+    
+    .chart-wrapper.force-show {
+      display: flex !important;
+    }
+    
+    .chart-wrapper.visible {
+      display: flex !important;
+    }
+    
+    .chart-wrapper.active {
+      display: flex !important;
+    }
+    
+    .chart-wrapper.show {
+      display: flex !important;
     }
     
     .chart-wrapper canvas {
       max-width: 100%;
       max-height: 100%;
       width: 100% !important;
-      height: auto !important;
+      height: 400px !important;
+    }
+    
+    #donationsChartFullscreen {
+      max-width: 100%;
+      max-height: 100%;
+      width: 100% !important;
+      height: 400px !important;
+    }
+    
+    #chartContainer #donationsChartFullscreen {
+      max-width: 100%;
+      max-height: 100%;
+      width: 100% !important;
+      height: 400px !important;
+    }
+    
+    #chartContainer #donationsChartFullscreen.force-show {
+      display: block !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer #donationsChartFullscreen.visible {
+      display: block !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer #donationsChartFullscreen.active {
+      display: block !important;
+      visibility: visible !important;
+    }
+    
+    #chartContainer #donationsChartFullscreen[style*="display: block"] {
+      display: block !important;
+    }
+    
+    #chartContainer #donationsChartFullscreen.force-show {
+      display: block !important;
+    }
+    
+    #chartContainer #donationsChartFullscreen.visible {
+      display: block !important;
+    }
+    
+    #chartContainer #donationsChartFullscreen.active {
+      display: block !important;
+    }
+    
+    .chart-wrapper canvas[style*="display: block"] {
+      display: block !important;
+    }
+    
+    .chart-wrapper canvas.force-show {
+      display: block !important;
+    }
+    
+    .chart-wrapper canvas.visible {
+      display: block !important;
+    }
+    
+    .chart-wrapper canvas.active {
+      display: block !important;
     }
     
     /* Botão fechar para o gráfico */
@@ -1607,7 +2021,7 @@
       <ul>
         <li>Clique no botão "Entidades Atendidas" para ver a quantidade de doações realizadas por cada Central do Dízimo, as entidades atendidas e o ano em que foram beneficiadas.</li>
         <li>Clique no botão "Escolas Profissionalizantes" para ver as escolas doadas, sua localização, informações sobre o edifício e cursos oferecidos, além de suas capacidades de formação de alunos por ano.</li>
-        <li>Use o botão "Gráfico Evolutivo" para visualizar a evolução histórica das doações.</li>
+        <li>Use o botão "Ver Gráficos" para visualizar a evolução histórica das doações.</li>
         <li>Use o botão "Infográficos" para ver algumas informações pontuais sobre as doações realizadas.</li>
         <li>Clique em qualquer espaço do mapa para voltar ao resumo global.</li>
       </ul>
@@ -1627,11 +2041,18 @@
         <button id="howToNavigateBtn" class="help-btn">
           <i class="fas fa-question-circle"></i> Como Navegar
         </button>
-        <div class="nav-buttons">
+        <div class="hamburger-menu">
+          <button id="hamburgerBtn" class="hamburger-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <div id="hamburgerDropdown" class="hamburger-dropdown">
           <button id="donationsBtn" class="active">Entidades Atendidas</button>
           <button id="schoolsBtn">Escolas Profissionalizantes</button>
           <button id="infographicsBtn">Infográficos</button>
-          <button id="chartBtn">Gráfico Evolutivo</button>
+          <button id="chartBtn">Ver Gráfico</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1668,7 +2089,7 @@
           <h3><i class="fas fa-filter"></i> Filtros e Funcionalidades</h3>
           <ul>
             <li><i class="fas fa-search"></i> <strong>Filtros:</strong> Na seção "Entidades Atendidas", use os filtros para refinar sua busca</li>
-            <li><i class="fas fa-chart-line"></i> <strong>Gráficos:</strong> Clique em "Gráfico Evolutivo" para visualizar evolução temporal</li>
+            <li><i class="fas fa-chart-line"></i> <strong>Gráficos:</strong> Clique em "Ver Gráfico" para visualizar evolução temporal</li>
             <li><i class="fas fa-info-circle"></i> <strong>Detalhes:</strong> Clique nos pins para informações detalhadas</li>
           </ul>
         </div>
@@ -1737,9 +2158,6 @@
           Selecione uma central para ver os detalhes ou visualize os totais agregados.
         </div>
       </div>
-      <button id="showChartBtn">
-        <i class="fas fa-chart-line"></i> Ver Gráfico
-      </button>
     </div>
 
     <div id="schoolsSidebar" style="display: none;">
@@ -1822,7 +2240,7 @@
       <button class="chart-close-btn" onclick="closeChartContainer()">×</button>
       <h2>Evolução Acumulativa das Doações</h2>
       <div class="chart-wrapper">
-        <canvas id="donationsChart"></canvas>
+        <canvas id="donationsChartFullscreen"></canvas>
       </div>
     </div>
   </div>
@@ -1897,6 +2315,32 @@
     document.getElementById('closeChartModal').addEventListener('click', function() {
       document.getElementById('chartModal').style.display = 'none';
       destroyChart();
+    });
+
+    // Event listener para o menu hambúrguer
+    document.getElementById('hamburgerBtn').addEventListener('click', function() {
+      const dropdown = document.getElementById('hamburgerDropdown');
+      const btn = document.getElementById('hamburgerBtn');
+      
+      if (dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+        btn.classList.remove('active');
+      } else {
+        dropdown.classList.add('show');
+        btn.classList.add('active');
+      }
+    });
+
+    // Fechar menu hambúrguer ao clicar fora
+    document.addEventListener('click', function(event) {
+      const hamburgerMenu = document.querySelector('.hamburger-menu');
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const dropdown = document.getElementById('hamburgerDropdown');
+      
+      if (!hamburgerMenu.contains(event.target)) {
+        dropdown.classList.remove('show');
+        hamburgerBtn.classList.remove('active');
+      }
     });
 
     // Fechar modal clicando fora dele
@@ -2087,7 +2531,7 @@
     async function fetchPaisesCentrais() {
       const { data, error } = await _supabase
         .from('zc_vw_tela_inicial_infografico')
-        .select('qtd_doacoes,central,pais_entidade,latitude_central,longitude_central');
+        .select('qtd_doacoes,central,pais_central,latitude_central,longitude_central');
       if (error) {
         console.error('Erro ao buscar países/centrais:', error);
         return [];
@@ -2186,7 +2630,7 @@
 
     // Modificar updateCentralDetailsPais para buscar entidades da central
     function updateCentralDetailsPais(obj) {
-      const paisNorm = normalizeCountryName(obj.pais_entidade);
+      const paisNorm = normalizeCountryName(obj.pais_central);
       document.getElementById('centralDetails').innerText = `País: ${getCountryDisplayName(paisNorm)} | Central: ${obj.central}`;
       Array.from(document.getElementsByClassName('central-item'))
         .forEach(el => el.classList.toggle('selected', el.dataset.central === obj.central));
@@ -2199,9 +2643,9 @@
     // Ao clicar em um país (summary), buscar entidades do país
     function onCountrySummaryClick(paisNorm) {
       // Buscar o nome original do país para filtrar corretamente
-      const paisOriginal = (paisesCentrais.find(c => normalizeCountryName(c.pais_entidade) === paisNorm) || {}).pais_entidade;
+      const paisOriginal = (paisesCentrais.find(c => normalizeCountryName(c.pais_central) === paisNorm) || {}).pais_central;
       if (paisOriginal) {
-        loadEntidadesSidebar('pais_entidade', paisOriginal, 0);
+        loadEntidadesSidebar('pais_central', paisOriginal, 0);
       }
     }
 
@@ -2212,7 +2656,7 @@
       // Agrupa centrais por país normalizado
       const grupos = {};
       paisesCentrais.forEach(c => {
-        const paisNorm = normalizeCountryName(c.pais_entidade);
+        const paisNorm = normalizeCountryName(c.pais_central);
         if (!grupos[paisNorm]) grupos[paisNorm] = [];
         grupos[paisNorm].push(c);
       });
@@ -2279,7 +2723,7 @@
       fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
         .then(r => r.json())
         .then(data => {
-          const paises = new Set(paisesCentrais.map(c => normalizeCountryName(c.pais_entidade)));
+          const paises = new Set(paisesCentrais.map(c => normalizeCountryName(c.pais_central)));
           countryLayer = L.geoJSON(data, {
             style: f => {
               const c = normalizeCountryName(f.properties.name);
@@ -2305,6 +2749,7 @@
     // Substitui chamada inicial para usar o modo países/centrais
     window.addEventListener('DOMContentLoaded', () => {
       initPaisesCentraisMode();
+      document.getElementById('chartContainer').style.display = 'none';
       document.getElementById('infographicsContainer').style.display = 'none';
     });
 
@@ -2316,7 +2761,7 @@
       const to   = from + limit - 1;
       const { data, error } = await _supabase
         .from('zi_vw_dados_infografico_v2')
-        .select('central,pais_entidade,latitude_central,longitude_central', { count: 'exact' })
+        .select('central,pais_central,latitude_central,longitude_central', { count: 'exact' })
         .range(from, to);
       if (error) {
         console.error(`Erro summary p.${page}`, error);
@@ -2328,7 +2773,7 @@
         if (!agrup[item.central]) {
           agrup[item.central] = {
             central: item.central,
-            country: item.pais_entidade,
+            country: item.pais_central,
             lat: parseCoord(item.latitude_central),
             lng: parseCoord(item.longitude_central),
             totalDoacoes: 0
@@ -2420,7 +2865,7 @@
         q = q.eq('central', entityContext.central);
       }
       if (entityContext.type === 'country') {
-        q = q.eq('pais_entidade', entityContext.country);
+        q = q.eq('pais_central', entityContext.country);
       }
       const { data, error, count } = await q;
       if (error) {
@@ -2686,15 +3131,25 @@
 
     // Função para inicializar modo escolas
     function initSchoolsMode() {
+      console.log('=== INICIANDO MODO ESCOLAS ===');
+      
+      // Fechar menu hambúrguer
+      const dropdown = document.getElementById('hamburgerDropdown');
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      dropdown.classList.remove('show');
+      hamburgerBtn.classList.remove('active');
+      
       // Ativar botão
       document.getElementById('schoolsBtn').classList.add('active');
       document.getElementById('donationsBtn').classList.remove('active');
       document.getElementById('infographicsBtn').classList.remove('active');
+      document.getElementById('chartBtn').classList.remove('active');
       
       // Configurar sidebars - mostrar sidebar esquerdo e ocultar direito
       document.getElementById('sidebarLeft').style.display = '';
       document.getElementById('sidebarRight').style.display = '';
       document.getElementById('map').style.display = '';
+      document.getElementById('chartContainer').style.display = 'none';
       document.getElementById('infographicsContainer').style.display = 'none';
       
       // Configurar conteúdo dos sidebars
@@ -2962,13 +3417,13 @@
       
       // Preencher filtro de país
       const filterPais = document.getElementById('filterPais');
-      if (filterPais && central.pais_entidade) {
-        filterPais.value = central.pais_entidade;
+      if (filterPais && central.pais_central) {
+        filterPais.value = central.pais_central;
       }
       
       console.log('Filtros definidos:', {
         central: central.central,
-        pais: central.pais_entidade
+        pais: central.pais_central
       });
     }
     
@@ -3041,25 +3496,56 @@
     
     // Função para inicializar modo gráfico
     function initChartMode() {
-      console.log('Iniciando modo gráfico...');
-      
-      // Ativar botão
-      document.getElementById('chartBtn').classList.add('active');
-      document.getElementById('donationsBtn').classList.remove('active');
-      document.getElementById('schoolsBtn').classList.remove('active');
-      document.getElementById('infographicsBtn').classList.remove('active');
-      
-      // Ocultar todos os outros containers
-      document.getElementById('sidebarLeft').style.display = 'none';
-      document.getElementById('sidebarRight').style.display = 'none';
-      document.getElementById('map').style.display = 'none';
-      document.getElementById('infographicsContainer').style.display = 'none';
-      
-      // Mostrar container do gráfico como página fixa
-      document.getElementById('chartContainer').style.display = 'block';
-      
-      // Gerar o gráfico
-      showGraficoDoacoes();
+      try {
+        console.log('=== INICIANDO MODO GRÁFICO ===');
+        console.log('Esta função controla APENAS o gráfico evolutivo (Chart.js)');
+        
+        // Fechar menu hambúrguer
+        const dropdown = document.getElementById('hamburgerDropdown');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        dropdown.classList.remove('show');
+        hamburgerBtn.classList.remove('active');
+        
+        // Ativar botão
+        document.getElementById('chartBtn').classList.add('active');
+        document.getElementById('donationsBtn').classList.remove('active');
+        document.getElementById('schoolsBtn').classList.remove('active');
+        document.getElementById('infographicsBtn').classList.remove('active');
+        
+        // Ocultar todos os outros containers
+        document.getElementById('sidebarLeft').style.display = 'none';
+        document.getElementById('sidebarRight').style.display = 'none';
+        document.getElementById('map').style.display = 'none';
+        document.getElementById('infographicsContainer').style.display = 'none';
+        console.log('Container de infográficos (imagens) OCULTADO');
+        
+        // Mostrar container do gráfico em tela cheia
+        const chartContainer = document.getElementById('chartContainer');
+        console.log('Container do gráfico encontrado:', chartContainer);
+        
+        if (chartContainer) {
+          chartContainer.style.display = 'flex';
+          chartContainer.style.visibility = 'visible';
+          chartContainer.style.zIndex = '9999';
+          chartContainer.classList.add('force-show', 'visible', 'active', 'show');
+          console.log('Container do gráfico evolutivo EXIBIDO em tela cheia');
+          
+          // Aguardar um pouco para garantir que o DOM foi atualizado antes de gerar o gráfico
+          setTimeout(() => {
+            console.log('=== CHAMANDO showGraficoDoacoes para gerar o gráfico ===');
+            console.log('Container do gráfico visível:', chartContainer.style.display);
+            console.log('Canvas existe:', document.getElementById('donationsChartFullscreen') !== null);
+            showGraficoDoacoes();
+          }, 200);
+        } else {
+          console.error('Container do gráfico não encontrado!');
+        }
+      } catch (error) {
+        console.error('=== ERRO EM initChartMode ===');
+        console.error('Erro completo:', error);
+        console.error('Stack trace:', error.stack);
+        alert('Erro ao inicializar modo gráfico. Verifique o console para mais detalhes.\nErro: ' + error.message);
+      }
     }
 
     // Função para lidar com clique em um país
@@ -3189,12 +3675,15 @@
     // Função para buscar e exibir o gráfico evolutivo somando todas as centrais
     async function showGraficoDoacoes() {
       try {
+        console.log('=== INICIANDO showGraficoDoacoes ===');
         console.log('Iniciando busca de dados para o gráfico evolutivo...');
+        console.log('Chart.js disponível:', typeof Chart !== 'undefined');
+        console.log('Supabase disponível:', typeof _supabase !== 'undefined');
         
         // Buscar dados da tabela zi_vw_dados_infografico_v2 com data de doação
       const { data, error } = await _supabase
           .from('zi_vw_dados_infografico_v2')
-          .select('data_doacao, central, pais_entidade')
+          .select('data_doacao, central, pais_central')
           .order('data_doacao', { ascending: true });
         
         // Buscar dados de inauguração para marcar no gráfico
@@ -3220,6 +3709,7 @@
         }
         
         console.log('Dados recebidos para o gráfico:', data);
+        console.log('Quantidade de registros:', data.length);
         
         // Processar dados para o gráfico - agrupar por ano e somar doações
         const doacoesPorAno = {};
@@ -3280,22 +3770,46 @@
         
         console.log('Inaugurações por ano:', inauguracoesPorAno);
 
-      // Exibir gráfico no modal
-      document.getElementById('chartModal').style.display = 'flex';
-        
-        // Destruir gráfico anterior se existir
-        destroyChart();
-        
-      const ctx = document.getElementById('donationsChart').getContext('2d');
-        
-                // Verificar se Chart.js está disponível
-        if (typeof Chart === 'undefined') {
-          throw new Error('Chart.js não está carregado');
+      // Destruir gráfico anterior se existir
+      destroyChart();
+      
+      // Aguardar um pouco para garantir que o DOM foi atualizado
+      setTimeout(() => {
+        const canvas = document.getElementById('donationsChartFullscreen');
+        console.log('Canvas encontrado:', canvas);
+        if (!canvas) {
+          console.error('Canvas donationsChartFullscreen não encontrado!');
+          alert('Erro: Canvas do gráfico não encontrado. Verifique se o elemento existe no HTML.');
+          return;
         }
+        
+        // Forçar exibição do canvas
+        canvas.style.display = 'block';
+        canvas.style.visibility = 'visible';
+        canvas.classList.add('force-show', 'visible', 'active');
+        console.log('Canvas forçado a ser exibido');
+        
+        const ctx = canvas.getContext('2d');
+        console.log('Contexto do canvas obtido:', ctx);
+        
+        // Verificar se Chart.js está disponível
+        if (typeof Chart === 'undefined') {
+          console.error('Chart.js não está carregado!');
+          alert('Erro: Chart.js não está carregado. Verifique se a biblioteca foi incluída corretamente.');
+          return;
+        }
+        
+        console.log('Chart.js está disponível, versão:', Chart.version);
         
         // Criar novo gráfico com Chart.js v4
         try {
-      window.donationsChart = new Chart(ctx, {
+          console.log('=== CRIANDO GRÁFICO COM CHART.JS ===');
+          console.log('Criando novo gráfico com Chart.js...');
+          console.log('Dados para o gráfico:', { anos, quantidadesAcumuladas });
+          console.log('Contexto do canvas:', ctx);
+          console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+          
+          window.donationsChart = new Chart(ctx, {
         type: 'line',
         data: {
               labels: anos,
@@ -3432,20 +3946,25 @@
         }
       });
           
-          console.log('Gráfico gerado com sucesso!');
+          console.log('=== GRÁFICO GERADO COM SUCESSO! ===');
+          console.log('Gráfico criado:', window.donationsChart);
+          console.log('Tipo do gráfico:', window.donationsChart.config.type);
+          console.log('Dados do gráfico:', window.donationsChart.data);
           
         } catch (chartError) {
           console.error('Erro ao criar gráfico:', chartError);
           alert('Erro ao criar o gráfico. Verifique o console para mais detalhes.');
         }
+      }, 100);
+      
       } catch (error) {
-        console.error('Erro ao gerar gráfico:', error);
-        alert('Erro ao gerar o gráfico. Verifique o console para mais detalhes.');
+        console.error('=== ERRO AO GERAR GRÁFICO ===');
+        console.error('Erro completo:', error);
+        console.error('Stack trace:', error.stack);
+        alert('Erro ao gerar o gráfico. Verifique o console para mais detalhes.\nErro: ' + error.message);
       }
     }
 
-    // Associar evento ao botão 'Ver Gráfico'
-    document.getElementById('showChartBtn').onclick = showGraficoDoacoes;
 
     // Função para resetar visão das escolas
     function resetSchoolView() {
@@ -3503,7 +4022,7 @@
         
         // Verificar se as colunas necessárias existem
         console.log('Verificando se as colunas necessárias existem na view...');
-        const colunasNecessarias = ['central', 'cidade_entidade', 'pais_entidade', 'data_doacao'];
+        const colunasNecessarias = ['central', 'cidade_entidade', 'pais_central', 'data_doacao'];
         const colunasDisponiveis = Object.keys(testData[0]);
         
         console.log('Colunas necessárias:', colunasNecessarias);
@@ -3528,7 +4047,7 @@
         
         if (paisesData && paisesData.length > 0) {
           // Extrair nomes dos países
-          const paisesNomes = paisesData.map(item => item.pais_entidade || item.nome || item.pais).filter(Boolean).sort();
+          const paisesNomes = paisesData.map(item => item.pais_central || item.pais_entidade || item.nome || item.pais).filter(Boolean).sort();
           console.log('Países encontrados na view:', paisesNomes);
           console.log('Total de países:', paisesNomes.length);
           
@@ -3669,7 +4188,7 @@
       // Construir query com filtros
       let query = _supabase
         .from('zi_vw_dados_infografico_v2')
-        .select('nome_entidade, tipo_atend_entidade, central, cidade_entidade, pais_entidade, data_doacao', { count: 'exact' });
+        .select('nome_entidade, tipo_atend_entidade, central, cidade_entidade, pais_central, data_doacao', { count: 'exact' });
 
       if (central) {
         query = query.eq('central', central);
@@ -3678,7 +4197,7 @@
         query = query.eq('cidade_entidade', cidade);
       }
       if (pais) {
-        query = query.eq('pais_entidade', pais);
+        query = query.eq('pais_central', pais);
       }
       if (ano) {
         query = query.like('data_doacao', `%/${ano}`);
@@ -3788,7 +4307,7 @@
         // Buscar dados baseados nos filtros já selecionados
         let query = _supabase
           .from('zi_vw_dados_infografico_v2')
-          .select('central, cidade_entidade, pais_entidade, data_doacao');
+          .select('central, cidade_entidade, pais_central, data_doacao');
 
         // Aplicar filtros já selecionados
         if (central) {
@@ -3798,7 +4317,7 @@
           query = query.eq('cidade_entidade', cidade);
         }
         if (pais) {
-          query = query.eq('pais_entidade', pais);
+          query = query.eq('pais_central', pais);
         }
 
         const { data, error } = await query;
@@ -4128,15 +4647,25 @@
 
     // Função para inicializar modo doações
     function initDonationsMode() {
+      console.log('=== INICIANDO MODO DOAÇÕES ===');
+      
+      // Fechar menu hambúrguer
+      const dropdown = document.getElementById('hamburgerDropdown');
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      dropdown.classList.remove('show');
+      hamburgerBtn.classList.remove('active');
+      
       // Ativar botão
       document.getElementById('donationsBtn').classList.add('active');
       document.getElementById('schoolsBtn').classList.remove('active');
       document.getElementById('infographicsBtn').classList.remove('active');
+      document.getElementById('chartBtn').classList.remove('active');
       
       // Configurar sidebars - mostrar sidebar esquerdo e ocultar direito
       document.getElementById('sidebarLeft').style.display = '';
       document.getElementById('sidebarRight').classList.remove('show');
       document.getElementById('map').style.display = '';
+      document.getElementById('chartContainer').style.display = 'none';
       document.getElementById('infographicsContainer').style.display = 'none';
       
       // Ajustar mapa para modo doações (sem sidebar direito)
@@ -4170,50 +4699,22 @@
       map.invalidateSize();
     }
 
-    // Função para inicializar modo escolas
-    function initSchoolsMode() {
-      // Ativar botão
-      document.getElementById('schoolsBtn').classList.add('active');
-      document.getElementById('donationsBtn').classList.remove('active');
-      document.getElementById('infographicsBtn').classList.remove('active');
-      
-      // Configurar sidebars - mostrar sidebar esquerdo e ocultar direito
-      document.getElementById('sidebarLeft').style.display = '';
-      document.getElementById('sidebarRight').style.display = '';
-      document.getElementById('map').style.display = '';
-      document.getElementById('infographicsContainer').style.display = 'none';
-      
-      // Configurar conteúdo dos sidebars
-      document.getElementById('donationsSidebar').style.display = 'none';
-      document.getElementById('schoolsSidebar').style.display = '';
-      document.getElementById('donationsDetails').style.display = 'none';
-      document.getElementById('schoolDetails').style.display = 'block';
-      
-      // Limpar marcadores e camadas anteriores
-      clearMarkers();
-      if (countryLayer) {
-        map.removeLayer(countryLayer);
-        countryLayer = null;
-      }
-      
-      // Carregar dados
-      loadCountryLayer("schools");
-      loadSchoolMarkers();
-      populateSchoolsList();
-      
-      // Ajustar zoom do mapa
-      map.flyTo([-15, -55], 4);
-      
-      // Garantir que o mapa está visível e atualizado
-      map.invalidateSize();
-    }
-
     // Função para inicializar modo infográficos
     function initInfographicsMode() {
+      console.log('=== INICIANDO MODO INFOGRÁFICOS ===');
+      console.log('Esta função controla APENAS as imagens (info1.png, info2.png, etc.)');
+      
+      // Fechar menu hambúrguer
+      const dropdown = document.getElementById('hamburgerDropdown');
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      dropdown.classList.remove('show');
+      hamburgerBtn.classList.remove('active');
+      
       // Ativar botão
       document.getElementById('infographicsBtn').classList.add('active');
       document.getElementById('donationsBtn').classList.remove('active');
       document.getElementById('schoolsBtn').classList.remove('active');
+      document.getElementById('chartBtn').classList.remove('active');
       
       // Limpar marcadores e camadas
       clearMarkers();
@@ -4226,7 +4727,10 @@
       document.getElementById('sidebarLeft').style.display = 'none';
       document.getElementById('sidebarRight').style.display = 'none';
       document.getElementById('map').style.display = 'none';
+      document.getElementById('chartContainer').style.display = 'none';
+      console.log('Container do gráfico evolutivo OCULTADO');
       document.getElementById('infographicsContainer').style.display = 'flex';
+      console.log('Container de infográficos (imagens) EXIBIDO');
     }
 
     /* =========================================================================
