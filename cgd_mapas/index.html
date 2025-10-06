@@ -2801,11 +2801,11 @@
             // Marcos históricos das primeiras doações
             const historicalMilestones = [
                 { year: 1979, country: 'Brasil', city: 'Birigui, São Paulo', description: 'Primeira doação da Central Geral do Dízimo' },
-                { year: 1997, country: 'Argentina', description: 'Primeira doação da Central do Dízimo de Argentina' },
-                { year: 2007, country: 'Itália', description: 'Primeira doação da Central do Dízimo de Itália' },
-                { year: 2011, country: 'Bolívia', description: 'Primeira doação da Central do Dízimo de Bolívia' },
-                { year: 2016, country: 'Chile', description: 'Primeira doação da Central do Dízimo de Chile' },
-                { year: 2023, country: 'Portugal', description: 'Primeira doação da Central do Dízimo de Portugal' }
+                { year: 1997, country: 'Argentina', description: 'Primeira doação da CD Argentina' },
+                { year: 2007, country: 'Itália', description: 'Primeira doação da CD Itália' },
+                { year: 2011, country: 'Bolívia', description: 'Primeira doação da CD Bolívia' },
+                { year: 2016, country: 'Chile', description: 'Primeira doação da CD Chile' },
+                { year: 2023, country: 'Portugal', description: 'Primeira doação da CD Portugal' }
             ];
 
             // Encontrar dados correspondentes aos marcos históricos
@@ -2877,8 +2877,8 @@
                                     const totalAno = totalAnoData[index];
                                     const acumulado = context.parsed.y;
                                     return [
-                                        `📈 Total do Ano: ${totalAno.toLocaleString('pt-BR')}`,
-                                        `📊 Acumulado: ${acumulado.toLocaleString('pt-BR')}`
+                                        `Total do Ano: ${totalAno.toLocaleString('pt-BR')}`,
+                                        `Acumulado: ${acumulado.toLocaleString('pt-BR')}`
                                     ];
                                 }
                             }
@@ -2889,7 +2889,7 @@
                             type: 'linear',
                             position: 'bottom',
                             display: true,
-                            min: 1975,
+                            min: 1979,
                             max: 2025,
                   title: { 
                     display: true, 
@@ -2918,11 +2918,7 @@
                 },
                 y: { 
                             beginAtZero: true,
-                            max: function(context) {
-                                const data = context.chart.data.datasets[0].data;
-                                const maxValue = Math.max(...data);
-                                return maxValue * 1.2; // 20% acima do valor máximo para dar espaço
-                            },
+                            max: 14000,
                   title: { 
                     display: true, 
                                 text: '',
@@ -2975,11 +2971,11 @@
                     // Descriptions dos marcos históricos
                     const milestoneDescriptions = {
                         1979: 'Primeira doação da Central Geral do Dízimo na cidade de Birigui, em São Paulo (Brasil)',
-                        1997: 'Primeira doação da Central do Dízimo de Argentina',
-                        2007: 'Primeira doação da Central do Dízimo de Itália',
-                        2011: 'Primeira doação da Central do Dízimo de Bolívia',
-                        2016: 'Primeira doação da Central do Dízimo de Chile',
-                        2023: 'Primeira doação da Central do Dízimo de Portugal'
+                        1997: 'Primeira doação da CD Argentina',
+                        2007: 'Primeira doação da CD Itália',
+                        2011: 'Primeira doação da CD Bolívia',
+                        2016: 'Primeira doação da CD Chile',
+                        2023: 'Primeira doação da CD Portugal'
                     };
                     
                             milestones.forEach((year, index) => {
@@ -3038,8 +3034,16 @@
                                     });
                                     if (currentLine) lines.push(currentLine);
                                     
-                                    // Desenhar cada linha à esquerda da linha vertical
-                                    const textX = xPos - 10; // 10px à esquerda da linha
+                                    // Desenhar cada linha - Birigui (1979) à direita, outros à esquerda
+                                    let textX;
+                                    if (year === 1979) {
+                                        textX = xPos + 10; // 10px à direita da linha para Birigui
+                                        ctx.textAlign = 'left';
+                                    } else {
+                                        textX = xPos - 10; // 10px à esquerda da linha para outros
+                                        ctx.textAlign = 'right';
+                                    }
+                                    
                                     lines.forEach((line, lineIndex) => {
                                         const lineY = descriptionY + (lineIndex * 14);
                                         ctx.fillText(line, textX, lineY);
