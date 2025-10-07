@@ -42,71 +42,6 @@
       max-width: 100vw;
       overflow-x: hidden;
     }
-    /* POP UP DE INSTRUÇÕES */
-    #instructionModal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      transition: opacity var(--transition);
-    }
-    .instruction-content {
-      background: var(--white);
-      padding: 40px 32px 32px 32px;
-      border-radius: var(--radius);
-      width: 95%;
-      max-width: 520px;
-      text-align: center;
-      box-shadow: var(--box-shadow);
-      animation: popIn 0.5s cubic-bezier(.4,0,.2,1);
-    }
-    @keyframes popIn {
-      from { transform: scale(0.85); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    .instruction-content h2 {
-      margin-bottom: 18px;
-      color: var(--dark-blue);
-      font-size: 1.7rem;
-      font-weight: 700;
-    }
-    .instruction-content p, .instruction-content li {
-      font-size: 1.08rem;
-      color: var(--primary-color);
-      line-height: 1.6;
-    }
-    .instruction-content ul {
-      text-align: left;
-      margin-bottom: 22px;
-      line-height: 1.7;
-      padding-left: 22px;
-    }
-    .instruction-content li {
-      margin: 10px 0;
-    }
-    #closeInstructionBtn {
-      background: #f8f6f2;
-      border: 1.5px solid #B29637;
-      color: #B29637;
-      padding: 14px 32px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      font-weight: normal;
-      transition: all var(--transition);
-      box-shadow: 0 2px 8px rgba(178, 150, 55, 0.1);
-      letter-spacing: 0.5px;
-    }
-    #closeInstructionBtn:hover {
-      background: #B29637;
-      color: #f8f6f2;
-      box-shadow: 0 4px 12px rgba(178, 150, 55, 0.2);
-      transform: translateY(-1px);
-    }
     /* HEADER UNIFICADO */
     .unified-header {
       position: fixed;
@@ -1929,20 +1864,6 @@
   </style>
 </head>
 <body>
-  <div id="instructionModal">
-    <div class="instruction-content">
-      <h2>Bem-vindo ao Mapa Interativo com alguns dados das Centrais do Dízimo no Brasil e no mundo!</h2>
-      <ul>
-        <li>Clique no botão "Entidades Atendidas" para ver a quantidade de doações realizadas por cada Central do Dízimo, as entidades atendidas e o ano em que foram beneficiadas.</li>
-        <li>Clique no botão "Escolas Profissionalizantes" para ver as escolas doadas, sua localização, informações sobre o edifício e cursos oferecidos, além de suas capacidades de formação de alunos por ano.</li>
-        <li>Use o botão "Ver Gráficos" para visualizar a evolução histórica das doações.</li>
-        <li>Use o botão "Infográficos" para ver algumas informações pontuais sobre as doações realizadas.</li>
-        <li>Clique em qualquer espaço do mapa para voltar ao resumo global.</li>
-      </ul>
-      <button id="closeInstructionBtn">Vamos Lá!</button>
-    </div>
-  </div>
-
   <!-- Modal de Instruções -->
   <div id="instructionsModal" class="instructions-modal">
     <div class="instructions-content">
@@ -3246,11 +3167,6 @@
         
         // Mostrar modal de carregamento
         document.getElementById('loadingModal').style.display = 'flex';
-        
-        // Event listeners para modais
-        document.getElementById('closeInstructionBtn').addEventListener('click', () => {
-            document.getElementById('instructionModal').style.display = 'none';
-        });
         
         // Modal de instruções
         document.getElementById('howToNavigateBtn').addEventListener('click', () => {
