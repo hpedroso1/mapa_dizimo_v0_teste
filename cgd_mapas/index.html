@@ -2358,7 +2358,7 @@
                 data.forEach(item => {
                     const entityDiv = document.createElement('div');
                     entityDiv.className = 'entity-item';
-                    entityDiv.innerHTML = `<div style="font-weight: 600; margin-bottom: 4px;">${item.nome_entidade}</div><div style="font-size: 0.9rem; color: #666;"><i class="fas fa-building"></i> ${item.central} | <i class="fas fa-map-marker-alt"></i> ${item.cidade_entidade} | <i class="fas fa-calendar"></i> ${item.ano}</div>`;
+                    entityDiv.innerHTML = `<div style="font-weight: 600; margin-bottom: 4px;">${item.nome_entidade}</div><div style="font-size: 0.9rem; color: #666;">${item.central} | ${item.cidade_entidade} | ${item.ano}</div>`;
                     container.appendChild(entityDiv);
                 });
             }
@@ -2384,7 +2384,7 @@
       data.forEach(ent => {
         const div = document.createElement('div');
         div.className = 'entity-item';
-            div.innerHTML = `<div style="font-weight: 600;">${ent.nome_entidade}</div><div style="font-size:0.9em; color:#555; margin-top:4px;"><i class="fas fa-building"></i> ${ent.central || 'N/A'} | <i class="fas fa-map-marker-alt"></i> ${ent.cidade_entidade || 'N/A'} | <i class="far fa-calendar-alt"></i> ${ent.ano || 'N/A'}</div>`;
+            div.innerHTML = `<div style="font-weight: 600;">${ent.nome_entidade}</div><div style="font-size:0.9em; color:#555; margin-top:4px;">${ent.central || 'N/A'} | ${ent.cidade_entidade || 'N/A'} | ${ent.ano || 'N/A'}</div>`;
         listEl.appendChild(div);
       });
     }
@@ -2469,7 +2469,7 @@
 
             uniqueCentrals.forEach(central => {
                 if (central.lat && central.lng) {
-                    const marker = L.marker([central.lat, central.lng], { icon: centralIcon }).addTo(markersLayer).bindPopup(`<div style="text-align: center; padding: 10px;"><h3 style="margin: 0 0 8px 0; color: var(--primary-color);">${central.nome_central}</h3><p style="margin: 0; font-size: 0.9em; color: #666;"><i class="fas fa-map-marker-alt"></i> Central CGD</p></div>`);
+                    const marker = L.marker([central.lat, central.lng], { icon: centralIcon }).addTo(markersLayer).bindPopup(`<div style="text-align: center; padding: 10px;"><h3 style="margin: 0 0 8px 0; color: var(--primary-color);">${central.nome_central}</h3><p style="margin: 0; font-size: 0.9em; color: #666;">Central CGD</p></div>`);
                     marker.on('click', () => filterByCentral(central.nome_central));
                 }
             });
@@ -2566,11 +2566,11 @@
                     
                     if (paisesEntidades.has(countryName)) {
                       return {
-                            fillColor: '#D4AF37',    // Dourado mais opaco no interior
-                            fillOpacity: 0.4,
-                            color: '#B29637',        // Dourado forte nas bordas
-                            weight: 2,
-                            opacity: 0.9
+                            color: '#A18547',        // Dourado forte nas bordas (mesma cor do modo schools)
+                            weight: 3,
+                            opacity: 0.8,
+                            fillColor: '#A18547',    // Dourado mais opaco no interior (mesma cor do modo schools)
+                            fillOpacity: 0.2
                         };
                     }
                     
@@ -3166,7 +3166,7 @@
              sidebarRight.style.display = 'block';
              const selectedSchoolInfo = document.getElementById('selectedSchoolInfo');
              if (selectedSchoolInfo) {
-                 selectedSchoolInfo.innerHTML = `<div class="school-details-header"><h2>Detalhes da Escola</h2><button class="school-details-close" onclick="closeSchoolDetails()">×</button></div><img src="images/${school.imagem}" alt="${school.nome}" class="school-details-image" onerror="this.style.display='none'"><div class="school-details-content"><h3 class="school-details-title">${school.nome}</h3><div class="school-details-info"><i class="fas fa-calendar-alt"></i><span>Inaugurada em: ${school.ano_inauguracao}</span></div><div class="school-details-info"><i class="fas fa-map-marker-alt"></i><span>${school.endereco}</span></div><div class="school-details-info"><i class="fas fa-users"></i><span>Capacidade: ${school.qtd_por_ano.toLocaleString('pt-BR')} alunos/ano</span></div><div class="school-details-capacity"><i class="fas fa-graduation-cap"></i>Escola Profissionalizante</div></div>`;
+                 selectedSchoolInfo.innerHTML = `<div class="school-details-header"><h2>Detalhes da Escola</h2><button class="school-details-close" onclick="closeSchoolDetails()">×</button></div><img src="images/${school.imagem}" alt="${school.nome}" class="school-details-image" onerror="this.style.display='none'"><div class="school-details-content"><h3 class="school-details-title">${school.nome}</h3><div class="school-details-info"><span>Inaugurada em: ${school.ano_inauguracao}</span></div><div class="school-details-info"><span>${school.endereco}</span></div><div class="school-details-info"><span>Capacidade: ${school.qtd_por_ano.toLocaleString('pt-BR')} alunos/ano</span></div><div class="school-details-capacity">Escola Profissionalizante</div></div>`;
              }
          }
      }
